@@ -1,31 +1,45 @@
+import streamlit as st
+import json
+from PIL import Image
 import os
-import pandas as pd
-import joblib
-from keras.models import load_model
 
 # Constants
-FEATURES_FILE = "../data/processed/features.csv"
-BASIC_MODEL_FILE = "../models/basic_model.joblib"
-CNN_MODEL_FILE = "../models/cnn_model.h5"
+BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
+CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
+IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 
-# Load features
-def load_features(features_file):
-    df = pd.read_csv(features_file)
-    return df
+# Load the primary colors data
+def load_primary_colors(results_file):
+    with open(results_file, 'r') as f:
+        return json.load(f)
 
-# Load models
-def load_models():
-    basic_model = joblib.load(BASIC_MODEL_FILE)
-    cnn_model = load_model(CNN_MODEL_FILE)
-    return basic_model, cnn_model
+# Display the primary colors
+def display_primary_colors(image_file, primary_colors):
+    st.image(image_file, caption=image_file, use_column_width=True)
+    st.write("Primary Colors:")
+    for color in primary_colors:
+        st.write(f"RGB: {color}")
+        st.markdown(f"<div style='width: 50px; height: 50px; background-color: rgb{color};'></div>", unsafe_allow_html=True)
 
-# Main function
+# Main function to run the Streamlit app
 def main():
-    features = load_features(FEATURES_FILE)
-    basic_model, cnn_model = load_models()
-    print("Models loaded successfully.")
-    # Further code for using models to make predictions can be added here
+    st.title("Movie Poster Primary Colors")
+
+    model_choice = st.selectbox("Choose Model", ["Basic Model", "CNN Model"])
+
+    if model_choice == "Basic Model":
+        results_file = BASIC_MODEL_RESULTS_FILE
+    else:
+        results_file = CNN_MODEL_RESULTS_FILE
+
+    # Load the dataset
+    primary_colors_data = load_primary_colors(results_file)
+
+    # Display the primary colors for each image
+    for data in primary_colors_data:
+        image_file = os.path.join(IMAGE_FOLDER, data['image'])
+        if os.path.exists(image_file):
+            display_primary_colors(image_file, data['primary_colors'])
 
 if __name__ == "__main__":
     main()
-

@@ -2,7 +2,8 @@ import json
 import pandas as pd
 
 # Constants
-DATA_FILE = "../data/processed/primary_colors.json"
+BASIC_DATA_FILE = "../data/processed/basic_model_predictions.json"
+CNN_DATA_FILE = "../data/processed/cnn_model_predictions.json"
 FEATURES_FILE = "../data/processed/features.csv"
 
 # Load data
@@ -31,9 +32,16 @@ def save_features(features, features_file):
 
 # Main function
 def main():
-    data = load_data(DATA_FILE)
-    features = build_features(data)
-    save_features(features, FEATURES_FILE)
+    basic_data = load_data(BASIC_DATA_FILE)
+    cnn_data = load_data(CNN_DATA_FILE)
+
+    basic_features = build_features(basic_data)
+    cnn_features = build_features(cnn_data)
+
+    # Combine basic and cnn features into one dataframe
+    combined_features = basic_features + cnn_features
+
+    save_features(combined_features, FEATURES_FILE)
 
 if __name__ == "__main__":
     main()

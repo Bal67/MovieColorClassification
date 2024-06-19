@@ -1,43 +1,25 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+import json
+import os
 
-# Constants
-FEATURES_FILE = "../data/processed/features.csv"
-MODEL_FILE = "../models/basic_model.joblib"
-
-# Load features
-def load_features(features_file):
-    df = pd.read_csv(features_file)
-    return df
-
-# Train model
-def train_model(features):
-    X = features.drop(columns=["image"])
-    y = features["image"]  # Dummy target, replace with actual target if available
+# Assuming you have a function to get predictions from your basic model
+def get_basic_model_predictions(image_folder):
+    predictions = []
+    # Your code to generate predictions for each image
+    for image_file in os.listdir(image_folder):
+        if image_file.endswith('.jpg'):
+            image_path = os.path.join(image_folder, image_file)
+            # Replace the following line with actual prediction code
+            primary_colors = get_primary_colors(image_path)  
+            predictions.append({'image': image_file, 'primary_colors': primary_colors})
     
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    print(classification_report(y_test, y_pred))
-    
-    return model
+    return predictions
 
-# Save model
-def save_model(model, model_file):
-    import joblib
-    joblib.dump(model, model_file)
-    print(f"Model saved to {model_file}")
-
-# Main function
-def main():
-    features = load_features(FEATURES_FILE)
-    model = train_model(features)
-    save_model(model, MODEL_FILE)
+def save_predictions(predictions, output_file):
+    with open(output_file, 'w') as f:
+        json.dump(predictions, f)
 
 if __name__ == "__main__":
-    main()
+    IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
+    OUTPUT_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
+    predictions = get_basic_model_predictions(IMAGE_FOLDER)
+    save_predictions(predictions, OUTPUT_FILE)
