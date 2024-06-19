@@ -1,22 +1,19 @@
 import streamlit as st
 import json
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 import os
 import pandas as pd
 import pickle
 import numpy as np
 from sklearn.cluster import KMeans
 from keras.models import load_model
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from keras.utils import to_categorical
-from scripts import graphs  # Update import statement
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
 CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
+PRIMARY_COLORS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/primary_colors.json"
 N_COLORS = 5
 
 # Load models
@@ -63,50 +60,42 @@ def main():
     # Load data and models
     basic_model = load_basic_model()
     cnn_model = load_cnn_model()
-    X_train, X_test, y_train, y_test, y_encoded, data = graphs.prepare_data()
-
-    # Generate graphs for data exploration
-    graphs.generate_graphs(data)
-
+    
     # Home tab
     if active_tab == "Home":
         st.header("Home")
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
         if uploaded_file is not None:
-            try:
-                image = Image.open(uploaded_file).convert("RGB")
-                primary_colors = get_primary_colors(image)
-                display_primary_colors(uploaded_file, primary_colors)
+            image = Image.open(uploaded_file).convert("RGB")
+            primary_colors = get_primary_colors(image)
+            display_primary_colors(uploaded_file, primary_colors)
 
-                # Display predictions from both models
-                image_features = primary_colors.flatten().reshape(1, -1)
-                basic_model_pred = basic_model.predict(image_features)
-                cnn_model_pred = cnn_model.predict(image_features)
+            # Display predictions from both models
+            image_features = primary_colors.flatten().reshape(1, -1)
+            basic_model_pred = basic_model.predict(image_features)
+            cnn_model_pred = cnn_model.predict(image_features)
 
-                # Display results in a table
-                results_df = pd.DataFrame({
-                    "Model": ["Basic Model", "CNN Model"],
-                    "Prediction": [basic_model_pred[0], cnn_model_pred[0]]
-                })
-                st.table(results_df)
-
-            except UnidentifiedImageError:
-                st.error("Cannot identify image file. Please upload a valid image.")
+            # Display results in a table
+            results_df = pd.DataFrame({
+                "Model": ["Basic Model", "CNN Model"],
+                "Prediction": [basic_model_pred[0], cnn_model_pred[0]]
+            })
+            st.table(results_df)
 
     # Basic Model tab
     elif active_tab == "Basic Model":
         st.header("Basic Model")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy Graph", use_column_width=True)
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Label Distribution", use_column_width=True)
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Color Distribution", use_column_width=True)
+        sample_image = get_sample_image()
+        st.image(sample_image, caption="Sample Training Image", use_column_width=True)
+        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_test)}")
 
     # CNN Model tab
     elif active_tab == "CNN Model":
         st.header("CNN Model")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png", caption="CNN Model Accuracy Graph", use_column_width=True)
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Label Distribution", use_column_width=True)
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Color Distribution", use_column_width=True)
+        sample_image = get_sample_image()
+        st.image(sample_image, caption="Sample Training Image", use_column_width=True)
+        st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test)[1]}")
 
 if __name__ == "__main__":
     main()
