@@ -10,7 +10,7 @@ import numpy as np
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 
-def train_cnn():
+def train_cnn(*args, **kwargs):
     # Load features
     data = pd.read_csv(FEATURES_FILE)
     X = data.drop(columns=['label'])
