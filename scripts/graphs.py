@@ -1,17 +1,20 @@
-import os
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+import os
 from PIL import Image
+import numpy as np
 from sklearn.cluster import KMeans
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from keras.utils import to_categorical
 
-TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
-DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
+# Extract primary colors
+def get_primary_colors(image, n_colors=5):
+    image_array = np.array(image)
+    pixels = image_array.reshape(-1, 3)
+    kmeans = KMeans(n_clusters=n_colors, n_init=10)
+    kmeans.fit(pixels)
+    colors = kmeans.cluster_centers_.astype(int)
+    return colors
 
-# Load and prepare data
+# Prepare data function (from prepare_data.py or similar)
 def prepare_data():
     data = pd.read_csv(DATA_FILE)
     X = data.drop(columns=["image", "label"])
@@ -24,31 +27,28 @@ def prepare_data():
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test, y_encoded, data
 
-# Extract primary colors
-def get_primary_colors(image, n_colors=5):
-    image_array = np.array(image)
-    pixels = image_array.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=n_colors, n_init=10)
-    kmeans.fit(pixels)
-    colors = kmeans.cluster_centers_.astype(int)
-    return colors
-
 # Generate and save graphs
 def generate_graphs(data):
     plt.figure(figsize=(15, 10))
-    for i, row in data.sample(5).iterrows():
+    
+    # Sample images with primary colors
+    sample_rows = data.sample(5)
+    for idx, (i, row) in enumerate(sample_rows.iterrows()):
         image_path = os.path.join(TRAINING_IMAGES_FOLDER, row['image'])
         image = Image.open(image_path)
         primary_colors = get_primary_colors(image)
-        plt.subplot(2, 5, i + 1)
+        
+        plt.subplot(2, 5, idx + 1)
         plt.imshow(image)
         plt.axis('off')
-        plt.subplot(2, 5, i + 6)
+        
+        plt.subplot(2, 5, idx + 6)
         for color in primary_colors:
-            plt.barh([0], [10], color=[color / 255.0], edgecolor='none')
+            plt.barh([0], [10], color=[color/255.0], edgecolor='none')
         plt.axis('off')
+    
     plt.suptitle("Sample Images with Primary Colors")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_colors.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_primary_colors.png")
     plt.close()
 
     # Distribution of primary colors
@@ -74,7 +74,7 @@ def generate_graphs(data):
     plt.xlabel("Label")
     plt.ylabel("Number of Images")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
-    plt.close()  
+    plt.close()
 
     # Basic Model graph
     basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
