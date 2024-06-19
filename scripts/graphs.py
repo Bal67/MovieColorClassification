@@ -12,7 +12,6 @@ from keras.models import load_model
 
 
 TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
-DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
 CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 N_COLORS = 5

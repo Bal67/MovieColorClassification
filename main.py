@@ -94,13 +94,20 @@ def main():
 
             # Display predictions from both models
             image_features = primary_colors.flatten().reshape(1, -1)
-            basic_model_pred = basic_model.predict(image_features)
+            basic_model_pred = basic_model.predict_proba(image_features)
             cnn_model_pred = cnn_model.predict(image_features)
+
+            # Format predictions as percentages
+            basic_model_pred_percent = [f"{p * 100:.2f}%" for p in basic_model_pred[0]]
+            cnn_model_pred_percent = [f"{p * 100:.2f}%" for p in cnn_model_pred[0]]
 
             # Display results in a table
             results_df = pd.DataFrame({
                 "Model": ["Basic Model", "CNN Model"],
-                "Prediction": [basic_model_pred[0], cnn_model_pred[0]]
+                "Red": [basic_model_pred_percent[0], cnn_model_pred_percent[0]],
+                "Green": [basic_model_pred_percent[1], cnn_model_pred_percent[1]],
+                "Blue": [basic_model_pred_percent[2], cnn_model_pred_percent[2]],
+                "Yellow": [basic_model_pred_percent[3], cnn_model_pred_percent[3]],
             })
             st.table(results_df)
 
