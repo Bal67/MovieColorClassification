@@ -33,7 +33,7 @@ def get_primary_colors(image_path, num_colors=NUM_COLORS):
     image = Image.open(image_path).convert('RGB')
     image = image.resize((100, 100))  # Resize to reduce computation
     image_np = np.array(image).reshape((100 * 100, 3))
-    kmeans = KMeans(n_clusters=num_colors)
+    kmeans = KMeans(n_clusters=num_colors, n_init=1)  # Explicitly set n_init to suppress the warning
     kmeans.fit(image_np)
     primary_colors = kmeans.cluster_centers_
     return primary_colors.tolist()

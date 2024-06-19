@@ -1,24 +1,21 @@
+import pickle
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
-import json
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 # Constants
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
-MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
-PREDICTIONS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/basic_model_predictions.json"
+MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
 
 def train_basic_model():
-    # Load data
+    # Load features
     data = pd.read_csv(FEATURES_FILE)
-
-    # Prepare data
-    X = data.drop(columns=['image', 'label']).values
-    y = data['label'].values
+    X = data.drop(columns=['label'])
+    y = data['label']
 
     # Ensure there are at least two classes
-    if len(set(y)) < 2:
+    if len(y.unique()) < 2:
         raise ValueError("The data contains only one class. Ensure there are at least two classes.")
 
     # Split data
@@ -28,22 +25,16 @@ def train_basic_model():
     model = LogisticRegression(max_iter=1000)
     model.fit(X_train, y_train)
 
+    # Evaluate model
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Basic Model Accuracy: {accuracy}")
+
     # Save model
-    with open(MODEL_SAVE_PATH, 'wb') as f:
+    with open(MODEL_FILE, 'wb') as f:
         pickle.dump(model, f)
-    print(f"Model saved to {MODEL_SAVE_PATH}")
 
-    # Predict and save results
-    predictions = model.predict(X_test)
-    results = [{"image": data.iloc[i]['image'], "predicted_color": pred} for i, pred in enumerate(predictions)]
-    with open(PREDICTIONS_FILE, 'w') as f:
-        json.dump(results, f)
-    print(f"Predictions saved to {PREDICTIONS_FILE}")
-
-    # Print classification report
-    print(classification_report(y_test, predictions))
-
-    return model
+    return accuracy
 
 if __name__ == "__main__":
     train_basic_model()
