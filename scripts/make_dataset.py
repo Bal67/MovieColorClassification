@@ -51,7 +51,7 @@ def classify_color(primary_colors):
         color_counts[closest_color] += 1
     return max(color_counts, key=color_counts.get)
 
-def analyze_images(image_files, image_folder):
+def analyze_images(image_files, image_folder, verbose=False):
     results = []
     for image_file in tqdm(image_files):
         image_path = os.path.join(image_folder, image_file)
@@ -64,7 +64,8 @@ def analyze_images(image_files, image_folder):
                 "label": label
             })
         except Exception as e:
-            print(f"Failed to process image {image_path}: {e}")
+            if verbose:
+                print(f"Failed to process image {image_path}: {e}")
     return results
 
 def main():
@@ -79,9 +80,9 @@ def main():
 
     # Analyze images and get primary colors and labels
     print(f"Analyzing {len(train_files)} images for training set...")
-    train_results = analyze_images(train_files, IMAGE_FOLDER)
+    train_results = analyze_images(train_files, IMAGE_FOLDER, verbose=False)
     print(f"Analyzing {len(test_files)} images for test set...")
-    test_results = analyze_images(test_files, IMAGE_FOLDER)
+    test_results = analyze_images(test_files, IMAGE_FOLDER, verbose=False)
 
     # Save results
     with open(PRIMARY_COLORS_FILE, 'w') as f:
