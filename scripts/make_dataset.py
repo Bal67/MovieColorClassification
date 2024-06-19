@@ -39,6 +39,7 @@ def get_poster_url(imdb_link):
             poster_url = poster_div.find('img')['src']
             return poster_url
         else:
+            print(f"No poster found for {imdb_link}")
             return None
     except Exception as e:
         print(f"Error scraping {imdb_link}: {e}")
