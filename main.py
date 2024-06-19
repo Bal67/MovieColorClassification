@@ -31,7 +31,6 @@ def prepare_data():
     y_encoded = label_encoder.fit_transform(y)
     y_categorical = to_categorical(y_encoded, num_classes=len(np.unique(y_encoded)))
 
-    X = X.values.reshape(-1, 5, 3, 3)
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test, y_encoded
 
@@ -45,8 +44,8 @@ def main():
     X_train, X_test, y_train, y_test, y_encoded = prepare_data()
 
     # Calculate accuracies
-    basic_model_accuracy = basic_model.score(X_test.reshape(X_test.shape[0], -1), np.argmax(y_test, axis=1))
-    cnn_model_accuracy = cnn_model.evaluate(X_test, y_test)[1]
+    basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
+    cnn_model_accuracy = cnn_model.evaluate(X_test, y_test, verbose=0)[1]
 
     # Display accuracies
     st.write(f"Basic Model Accuracy: {basic_model_accuracy:.4f}")
