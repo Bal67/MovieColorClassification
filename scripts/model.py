@@ -4,8 +4,8 @@ from PIL import Image
 import os
 
 # Constants
-BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
-CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
+BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/basic_model_predictions.json"
+CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/cnn_model_predictions.json"
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 
 # Load the primary colors data
