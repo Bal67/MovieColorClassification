@@ -160,8 +160,8 @@ def main():
         st.write("This graph shows the number of images available for each genre in the dataset, providing an overview of the dataset's class distribution.")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Number of Images per Label")
         
-        st.header("Genre Color Distribution")
-        st.write("This graph shows the distribution of primary colors for each genre, giving insights into the color patterns associated with different movie genres.")
+        st.header("Specific Color Distribution")
+        st.write("This graph shows the distribution of otther colors for each label, giving insights into the color patterns.")
         genre_color_distribution(data)
 
 if __name__ == "__main__":
