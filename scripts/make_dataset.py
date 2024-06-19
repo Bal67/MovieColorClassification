@@ -5,11 +5,15 @@ from PIL import Image
 from sklearn.cluster import KMeans
 from collections import Counter
 import json
+import random
 
 # Constants
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
-RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/primary_colors.json"
+TRAIN_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/train_primary_colors.json"
+TEST_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/test_primary_colors.json"
 NUM_CLUSTERS = 5
+TRAIN_SIZE = 500
+TEST_SIZE = 50
 
 # Function to extract primary colors from an image
 def get_primary_colors(image_path, num_clusters=NUM_CLUSTERS):
@@ -29,10 +33,8 @@ def get_primary_colors(image_path, num_clusters=NUM_CLUSTERS):
     return sorted_colors
 
 # Load images and analyze primary colors
-def analyze_images(image_folder):
+def analyze_images(image_files, image_folder):
     results = []
-    image_files = [f for f in os.listdir(image_folder) if f.endswith('.jpg')]
-    
     for image_file in image_files:
         image_path = os.path.join(image_folder, image_file)
         primary_colors = get_primary_colors(image_path)
@@ -52,9 +54,20 @@ def save_results(results, results_file):
 
 # Main function
 def main():
-    print("Analyzing images for primary colors...")
-    results = analyze_images(IMAGE_FOLDER)
-    save_results(results, RESULTS_FILE)
+    print("Loading and shuffling images...")
+    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.endswith('.jpg')]
+    random.shuffle(image_files)
+    
+    train_files = image_files[:TRAIN_SIZE]
+    test_files = image_files[TRAIN_SIZE:TRAIN_SIZE + TEST_SIZE]
+    
+    print(f"Analyzing {len(train_files)} images for training set...")
+    train_results = analyze_images(train_files, IMAGE_FOLDER)
+    save_results(train_results, TRAIN_RESULTS_FILE)
+    
+    print(f"Analyzing {len(test_files)} images for testing set...")
+    test_results = analyze_images(test_files, IMAGE_FOLDER)
+    save_results(test_results, TEST_RESULTS_FILE)
 
 if __name__ == "__main__":
     main()
