@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 
-def train_cnn():
+def train_cnn(*args):
     # Load data
     data = pd.read_csv(FEATURES_FILE)
 
