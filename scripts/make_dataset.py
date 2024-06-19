@@ -2,14 +2,13 @@ import os
 import pandas as pd
 from PIL import Image
 import numpy as np
-import requests
-from io import BytesIO
+import gdown
 
-def download_image(url, save_path):
+def download_image(file_id, save_path):
+    url = f"https://drive.google.com/drive/folders/1WfK0iYuQ_6v_VWca_dLkcayYYgErx2DJ?usp=sharing"
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        img = Image.open(BytesIO(response.content)).convert('RGB')
+        gdown.download(url, save_path, quiet=False)
+        img = Image.open(save_path).convert('RGB')
         img.save(save_path)
         return True
     except Exception as e:
@@ -45,14 +44,18 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     labels = []
     num_missing = 0
     valid_entries = 0
+    invalid_entries = 0
 
     for index, row in df.iterrows():
         poster = row['Poster']
         if isinstance(poster, str) and poster:
+            file_id = poster.split('/')[-2]  # Extract file ID from URL
             poster_filename = os.path.basename(poster)
             poster_path = os.path.join(posters_path, poster_filename)
+
             if not os.path.exists(poster_path):
-                if not download_image(poster, poster_path):
+                if not download_image(file_id, poster_path):
+                    invalid_entries += 1
                     continue
 
             if os.path.exists(poster_path):
@@ -85,6 +88,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     labels = np.array(labels)
 
     print(f"Found {valid_entries} valid entries.")
+    print(f"Skipped {invalid_entries} invalid entries due to 404 errors.")
     if num_missing > 0:
         print(f"Handled {num_missing} entries due to missing images.")
 
