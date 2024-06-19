@@ -1,94 +1,88 @@
 import os
 import json
 import random
+from tqdm import tqdm
 from PIL import Image
 from sklearn.cluster import KMeans
-from collections import Counter
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import numpy as np
 
 # Constants
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 PROCESSED_DIR = "/content/drive/My Drive/MovieGenre/data/processed"
-TRAIN_SIZE = 250
-TEST_SIZE = 25
+PRIMARY_COLORS_FILE = os.path.join(PROCESSED_DIR, "primary_colors.json")
+CLASS_LABELS_FILE = os.path.join(PROCESSED_DIR, "class_labels.json")
+TRAIN_RATIO = 0.8
 NUM_COLORS = 5
-OUTPUT_FILE = os.path.join(PROCESSED_DIR, "primary_colors.json")
-IMAGE_SIZE = (100, 100)  # Resize images to 100x100 for faster processing
-MAX_WORKERS = 4  # Number of parallel workers
 
-# Ensure the processed directory exists
+# Define color labels
+COLOR_LABELS = {
+    "red": [255, 0, 0],
+    "green": [0, 255, 0],
+    "blue": [0, 0, 255],
+    "yellow": [255, 255, 0]
+}
+
+# Create directories if they don't exist
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 
-def load_images(image_folder):
-    image_files = [f for f in os.listdir(image_folder) if f.endswith('.jpg')]
-    return image_files
-
-def filter_unprocessable_images(image_files):
-    valid_images = []
-    for image_file in image_files:
-        image_path = os.path.join(IMAGE_FOLDER, image_file)
-        try:
-            with Image.open(image_path) as img:
-                img.verify()
-            valid_images.append(image_file)
-        except (IOError, SyntaxError):
-            continue
-    return valid_images
-
-def get_primary_colors(image_path):
+def get_primary_colors(image_path, num_colors=NUM_COLORS):
     image = Image.open(image_path).convert('RGB')
-    image = image.resize(IMAGE_SIZE)
-    pixels = list(image.getdata())
-    kmeans = KMeans(n_clusters=NUM_COLORS, n_init=10)
-    kmeans.fit(pixels)
-    counter = Counter(kmeans.labels_)
-    primary_colors = [kmeans.cluster_centers_[i].tolist() for i in counter.keys()]
-    return primary_colors
+    image = image.resize((100, 100))  # Resize to reduce computation
+    image_np = np.array(image).reshape((100 * 100, 3))
+    kmeans = KMeans(n_clusters=num_colors)
+    kmeans.fit(image_np)
+    primary_colors = kmeans.cluster_centers_
+    return primary_colors.tolist()
 
-def analyze_image(image_file, image_folder):
-    image_path = os.path.join(image_folder, image_file)
-    try:
-        primary_colors = get_primary_colors(image_path)
-        return {"image": image_file, "primary_colors": primary_colors}
-    except Exception as e:
-        return None
+def classify_color(primary_colors):
+    color_counts = {color: 0 for color in COLOR_LABELS.keys()}
+    for color in primary_colors:
+        min_distance = float('inf')
+        closest_color = None
+        for label, rgb in COLOR_LABELS.items():
+            distance = np.linalg.norm(np.array(rgb) - np.array(color))
+            if distance < min_distance:
+                min_distance = distance
+                closest_color = label
+        color_counts[closest_color] += 1
+    return max(color_counts, key=color_counts.get)
 
 def analyze_images(image_files, image_folder):
     results = []
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(analyze_image, image_file, image_folder): image_file for image_file in image_files}
-        for future in as_completed(futures):
-            result = future.result()
-            if result:
-                results.append(result)
+    for image_file in tqdm(image_files):
+        image_path = os.path.join(image_folder, image_file)
+        try:
+            primary_colors = get_primary_colors(image_path)
+            label = classify_color(primary_colors)
+            results.append({
+                "image": image_file,
+                "primary_colors": primary_colors,
+                "label": label
+            })
+        except Exception as e:
+            print(f"Failed to process image {image_path}: {e}")
     return results
 
 def main():
-    print("Loading images...")
-    image_files = load_images(IMAGE_FOLDER)
-    
-    print("Filtering out unprocessable images...")
-    valid_images = filter_unprocessable_images(image_files)
-    print(f"Found {len(valid_images)} valid images after filtering.")
+    # Load and shuffle images
+    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.endswith('.jpg')]
+    random.shuffle(image_files)
 
-    random.shuffle(valid_images)
-    train_files = valid_images[:TRAIN_SIZE]
-    test_files = valid_images[TRAIN_SIZE:TRAIN_SIZE + TEST_SIZE]
+    # Split images into training and testing sets
+    split_index = int(len(image_files) * TRAIN_RATIO)
+    train_files = image_files[:split_index]
+    test_files = image_files[split_index:]
 
+    # Analyze images and get primary colors and labels
     print(f"Analyzing {len(train_files)} images for training set...")
     train_results = analyze_images(train_files, IMAGE_FOLDER)
     print(f"Analyzing {len(test_files)} images for test set...")
     test_results = analyze_images(test_files, IMAGE_FOLDER)
 
-    data = {
-        "train": train_results,
-        "test": test_results
-    }
-
-    with open(OUTPUT_FILE, 'w') as f:
-        json.dump(data, f)
-
-    print(f"Dataset creation completed. Data saved to {OUTPUT_FILE}")
+    # Save results
+    with open(PRIMARY_COLORS_FILE, 'w') as f:
+        json.dump({"train": train_results, "test": test_results}, f)
+    print(f"Dataset creation completed. Data saved to {PRIMARY_COLORS_FILE}")
 
 if __name__ == "__main__":
     main()
