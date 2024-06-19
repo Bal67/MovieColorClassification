@@ -5,6 +5,10 @@ from tqdm import tqdm
 from PIL import Image
 from sklearn.cluster import KMeans
 import numpy as np
+import warnings
+
+# Suppress specific sklearn warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn")
 
 # Constants
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
