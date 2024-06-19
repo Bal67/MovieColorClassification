@@ -28,27 +28,4 @@ def main():
 
     # Train and evaluate models
     st.write("Training Basic Model...")
-    basic_model_result = train_basic_model()
-
-    st.write("Training CNN Model...")
-    cnn_model_result = train_cnn()
-
-    # Choose model to display results
-    model_choice = st.selectbox("Choose Model", ["Basic Model", "CNN Model"])
-
-    if model_choice == "Basic Model":
-        results_file = BASIC_MODEL_RESULTS_FILE
-    else:
-        results_file = CNN_MODEL_RESULTS_FILE
-
-    # Load the dataset
-    primary_colors_data = load_primary_colors(results_file)
-
-    # Display the primary colors for each image
-    for data in primary_colors_data:
-        image_file = os.path.join(IMAGE_FOLDER, data['image'])
-        if os.path.exists(image_file):
-            display_primary_colors(image_file, data['primary_colors'])
-
-if __name__ == "__main__":
-    main()
+    basic_model_re
