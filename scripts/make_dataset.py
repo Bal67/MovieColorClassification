@@ -15,11 +15,13 @@ def prepare_data():
     labels = []
     
     for index, row in df.iterrows():
-        poster_path = os.path.join(posters_path, row['Poster'])
-        if os.path.exists(poster_path):
-            image = Image.open(poster_path).convert('RGB').resize((128, 128))
-            images.append(np.array(image))
-            labels.append(row['Genre'])
+        poster = row['Poster']
+        if isinstance(poster, str) and poster:  # Ensure poster path is a non-empty string
+            poster_path = os.path.join(posters_path, poster)
+            if os.path.exists(poster_path):
+                image = Image.open(poster_path).convert('RGB').resize((128, 128))
+                images.append(np.array(image))
+                labels.append(row['Genre'])
     
     images = np.array(images)
     labels = np.array(labels)
