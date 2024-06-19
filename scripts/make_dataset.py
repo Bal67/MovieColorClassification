@@ -2,8 +2,10 @@ import os
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from urllib.request import urlretrieve
+import requests
 from PIL import Image
+from urllib.request import urlretrieve
+from bs4 import BeautifulSoup
 
 # Constants
 DATA_PATH = "/content/drive/MyDrive/MovieGenre/archive"
@@ -27,6 +29,20 @@ def download_image(url, save_path):
             os.remove(save_path)  # Remove corrupted image file
         return False
 
+def get_poster_url(imdb_link):
+    try:
+        response = requests.get(imdb_link)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        poster_div = soup.find('div', class_='poster')
+        if poster_div:
+            poster_url = poster_div.find('img')['src']
+            return poster_url
+        else:
+            return None
+    except Exception as e:
+        print(f"Error scraping {imdb_link}: {e}")
+        return None
+
 def prepare_data():
     # Load CSV
     try:
@@ -43,22 +59,26 @@ def prepare_data():
 
     for index, row in tqdm(df.iterrows(), total=df.shape[0]):
         imdb_id = row['imdbId']
-        poster_url = row['Poster']
+        imdb_link = row['Imdb Link']
         genre = row['Genre']
         poster_filename = f"{imdb_id}.jpg"
         train_poster_path = os.path.join(TRAIN_POSTERS_PATH, poster_filename)
 
-        # Download and process training images
-        if download_image(poster_url, train_poster_path):
-            download_success += 1
-            try:
-                image = Image.open(train_poster_path).convert('RGB').resize((128, 128))
-                train_images.append(np.array(image))
-                train_labels.append(genre)
-                process_success += 1
-            except Exception as e:
-                print(f"Error processing downloaded image {train_poster_path}: {e}")
-                process_failure += 1
+        poster_url = get_poster_url(imdb_link)
+        if poster_url:
+            # Download and process training images
+            if download_image(poster_url, train_pposter_path):
+                download_success += 1
+                try:
+                    image = Image.open(train_poster_path).convert('RGB').resize((128, 128))
+                    train_images.append(np.array(image))
+                    train_labels.append(genre)
+                    process_success += 1
+                except Exception as e:
+                    print(f"Error processing downloaded image {train_poster_path}: {e}")
+                    process_failure += 1
+            else:
+                download_failure += 1
         else:
             download_failure += 1
 
