@@ -54,7 +54,7 @@ def train_cnn():
     print(f"Model saved to {MODEL_SAVE_PATH}")
 
     # Save predictions
-    predictions = [{"image": img, "primary_colors": data.iloc[i, 2:].values.tolist()} for i, img in enumerate(data['image'])]  # Assuming primary colors are precomputed
+    predictions = [{"image": img, "primary_colors": data.iloc[i, 2:].values.tolist()} for i, img in enumerate(data['image'])] 
     with open(PREDICTIONS_FILE, 'w') as f:
         json.dump(predictions, f)
     print(f"Predictions saved to {PREDICTIONS_FILE}")

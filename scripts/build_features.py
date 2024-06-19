@@ -14,21 +14,20 @@ def load_data(data_file):
 # Generate labels based on primary colors
 def generate_label(primary_colors):
     # Use the first primary color to generate a label
-    # Here we simply convert the RGB value to a single number
-    # You can customize this logic to suit your needs
     return int(sum(primary_colors[0]) // 3)
 
 # Process data to build features
 def build_features(data):
     rows = []
-    for item in data:
-        row = {"image": item["image"]}
-        row["label"] = generate_label(item["primary_colors"])
-        for i, color in enumerate(item["primary_colors"]):
-            row[f"color_{i}_r"] = color[0]
-            row[f"color_{i}_g"] = color[1]
-            row[f"color_{i}_b"] = color[2]
-        rows.append(row)
+    for dataset in ['train', 'test']:
+        for item in data[dataset]:
+            row = {"image": item["image"]}
+            row["label"] = generate_label(item["primary_colors"])
+            for i, color in enumerate(item["primary_colors"]):
+                row[f"color_{i}_r"] = color[0]
+                row[f"color_{i}_g"] = color[1]
+                row[f"color_{i}_b"] = color[2]
+            rows.append(row)
     return rows
 
 # Save features to a CSV file
