@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from scripts.graphs import generate_graphs
+import mathplotlib.pyplot as plt
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
@@ -64,6 +65,26 @@ def prepare_data():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test, y_encoded, data
+
+# Generate genre color distribution graph
+def genre_color_distribution(data):
+    genres = data['label'].unique()
+    color_columns = [col for col in data.columns if col.startswith('color_')]
+    colors = data[color_columns]
+    
+    plt.figure(figsize=(12, 8))
+    for genre in genres:
+        genre_data = colors[data['label'] == genre]
+        genre_colors = genre_data.values.reshape(-1, 3)
+        
+        for i in range(3):
+            plt.hist(genre_colors[:, i], bins=256, alpha=0.5, label=f'{genre} - {"RGB"[i]}')
+    
+    plt.legend(loc='upper right')
+    plt.title("Primary Colors Distribution by Genre")
+    plt.xlabel("Color Value")
+    plt.ylabel("Frequency")
+    st.pyplot(plt)
 
 # Main function to run the Streamlit app
 def main():
