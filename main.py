@@ -151,14 +151,14 @@ def main():
     elif active_tab == "Data Exploration":
         st.header("Data Exploration")
         
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png", caption="Sample Images with Primary Colors")
         st.write("This graph shows a few sample images from the dataset along with their extracted primary colors.")
-
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Distribution of Primary Colors")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png", caption="Sample Images with Primary Colors")
+        
         st.write("This graph displays the distribution of primary colors across the entire dataset. Each color channel (Red, Green, Blue) is shown separately.")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Distribution of Primary Colors")
 
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Number of Images per Label")
         st.write("This graph shows the number of images available for each genre in the dataset, providing an overview of the dataset's class distribution.")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Number of Images per Label")
         
         st.header("Genre Color Distribution")
         st.write("This graph shows the distribution of primary colors for each genre, giving insights into the color patterns associated with different movie genres.")
