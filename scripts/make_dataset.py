@@ -7,6 +7,9 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     data_path = "/content/drive/MyDrive/MovieGenre/archive"
     csv_path = os.path.join(data_path, "MovieGenre.csv")
     posters_path = os.path.join(data_path, "SampleMoviePosters")
+    
+    # Placeholder image (all zeros) if the poster is not found and missing_value_strategy is "default"
+    placeholder_image = np.zeros((128, 128, 3))
 
     print(f"CSV Path: {csv_path}")
     print(f"Posters Path: {posters_path}")
@@ -54,7 +57,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
                 if missing_value_strategy == "remove":
                     num_missing += 1
                 elif missing_value_strategy == "default":
-                    images.append(np.zeros((128, 128, 3)))
+                    images.append(placeholder_image)
                     labels.append(default_genre)
                     valid_entries += 1
         else:
@@ -62,7 +65,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
             if missing_value_strategy == "remove":
                 num_missing += 1
             elif missing_value_strategy == "default":
-                images.append(np.zeros((128, 128, 3)))
+                images.append(placeholder_image)
                 labels.append(default_genre)
                 valid_entries += 1
 
