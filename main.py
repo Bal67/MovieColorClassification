@@ -47,10 +47,9 @@ def display_primary_colors(image_file, primary_colors):
         color_block[:, :] = color
         st.image(color_block, caption=f"RGB: {color}", use_column_width=False, width=100)
 
-# Get sample image from training set
-def get_sample_image():
-    files = os.listdir(TRAINING_IMAGES_FOLDER)
-    sample_file = os.path.join(TRAINING_IMAGES_FOLDER, files[0])
+# Get sample image from test set
+def get_sample_image(test_data):
+    sample_file = os.path.join(TRAINING_IMAGES_FOLDER, test_data.sample(1)['image'].values[0])
     return sample_file
 
 # Load and prepare data
@@ -114,7 +113,7 @@ def main():
     # Basic Model tab
     elif active_tab == "Basic Model":
         st.header("Basic Model")
-        sample_image = get_sample_image()
+        sample_image = get_sample_image(data)
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
         st.write(f"Basic Model Accuracy: {basic_model.score(X_test, np.argmax(y_test, axis=1))}")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy")
@@ -122,7 +121,7 @@ def main():
     # CNN Model tab
     elif active_tab == "CNN Model":
         st.header("CNN Model")
-        sample_image = get_sample_image()
+        sample_image = get_sample_image(data)
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
         st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test, verbose=0)[1]}")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png", caption="CNN Model Accuracy")
