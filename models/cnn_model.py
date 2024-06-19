@@ -11,7 +11,7 @@ CNN_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/mo
 CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
 NUM_CLASSES = 10  # Adjust according to your number of classes
 
-def train_cnn():
+def train_cnn(*args):
     # Load features
     data = pd.read_csv(FEATURES_FILE)
     
@@ -47,7 +47,7 @@ def train_cnn():
     # Save the model
     model.save(CNN_MODEL_PATH)
 
-def evaluate_cnn():
+def evaluate_cnn(*args):
     # Load features
     data = pd.read_csv(FEATURES_FILE)
     

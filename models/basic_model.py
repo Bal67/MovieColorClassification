@@ -10,7 +10,7 @@ FEATURES_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/dat
 BASIC_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model.pkl"
 BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
 
-def train_basic_model():
+def train_basic_model(*args):
     # Load features
     data = pd.read_csv(FEATURES_FILE)
     
@@ -28,7 +28,7 @@ def train_basic_model():
     # Save the model
     joblib.dump(model, BASIC_MODEL_PATH)
 
-def evaluate_basic_model():
+def evaluate_basic_model(*args):
     # Load features
     data = pd.read_csv(FEATURES_FILE)
     
@@ -51,4 +51,3 @@ def evaluate_basic_model():
     results = [{"image": img, "primary_colors": pc} for img, pc in zip(X_test.index, y_pred)]
     with open(BASIC_MODEL_RESULTS_FILE, 'w') as f:
         json.dump(results, f)
-
