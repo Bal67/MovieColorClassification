@@ -47,7 +47,7 @@ def generate_graphs(data):
         plt.subplot(2, 5, idx  + 1)
         plt.imshow(image)
         plt.axis('off')
-        plt.subplot(2, 5, i + 6)
+        plt.subplot(2, 5, idx + 6)
         for color in primary_colors:
             plt.barh([0], [10], color=[color / 255.0], edgecolor='none')
         plt.axis('off')
