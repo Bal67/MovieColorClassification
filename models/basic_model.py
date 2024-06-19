@@ -2,52 +2,43 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-import joblib
-import json
 
 # Constants
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
-BASIC_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model.pkl"
-BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
+MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
 
-def train_basic_model(*args):
-    # Load features
+def train_basic_model():
+    # Load data
     data = pd.read_csv(FEATURES_FILE)
-    
-    # Prepare features and labels
-    X = data.drop(columns=["image"])
-    y = data["image"]  # Assuming the "image" column contains the labels, adjust as needed
 
-    # Split the data
+    # Prepare data
+    X = data.drop(columns=['image']).values
+    y = data['image'].apply(lambda x: 1 if 'positive_class' in x else 0).values  # Replace 'positive_class' with actual class
+
+    # Split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Train a logistic regression model
-    model = LogisticRegression(max_iter=1000)
+    # Standardize the data
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    # Train model
+    model = LogisticRegression(max_iter=1000)  # Increase the number of iterations
     model.fit(X_train, y_train)
 
-    # Save the model
-    joblib.dump(model, BASIC_MODEL_PATH)
-
-def evaluate_basic_model(*args):
-    # Load features
-    data = pd.read_csv(FEATURES_FILE)
-    
-    # Prepare features and labels
-    X = data.drop(columns=["image"])
-    y = data["image"]  # Assuming the "image" column contains the labels, adjust as needed
-
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Load the model
-    model = joblib.load(BASIC_MODEL_PATH)
-
-    # Evaluate the model
+    # Evaluate model
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"Basic Model Accuracy: {accuracy:.2f}")
+    print(f"Basic model accuracy: {accuracy}")
 
-    # Save the predictions
-    results = [{"image": img, "primary_colors": pc} for img, pc in zip(X_test.index, y_pred)]
-    with open(BASIC_MODEL_RESULTS_FILE, 'w') as f:
-        json.dump(results, f)
+    # Save model
+    import joblib
+    joblib.dump(model, MODEL_SAVE_PATH)
+    print(f"Basic model saved to {MODEL_SAVE_PATH}")
+
+    return model
+
+if __name__ == "__main__":
+    train_basic_model()

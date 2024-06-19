@@ -14,14 +14,13 @@ def load_data(data_file):
 # Process data to build features
 def build_features(data):
     rows = []
-    for dataset in data.values():
-        for item in dataset:
-            row = {"image": item["image"]}
-            for i, color in enumerate(item["primary_colors"]):
-                row[f"color_{i}_r"] = color[0]
-                row[f"color_{i}_g"] = color[1]
-                row[f"color_{i}_b"] = color[2]
-            rows.append(row)
+    for item in data['train']:
+        row = {"image": item["image"]}
+        primary_colors = item["primary_colors"]
+        # Flatten the primary colors to match the expected feature shape
+        flattened_colors = [color for colors in primary_colors for color in colors]
+        row.update({f"color_{i}": color for i, color in enumerate(flattened_colors)})
+        rows.append(row)
     return rows
 
 # Save features to a CSV file

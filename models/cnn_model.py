@@ -1,86 +1,57 @@
 import pandas as pd
-from tensorflow.keras.models import Sequential, load_model
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
-from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
-import json
 
 # Constants
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
-CNN_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model.h5"
-CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
-NUM_CLASSES = 10  # Adjust according to your number of classes
+MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 
-def train_cnn(*args):
-    # Load features
+def train_cnn():
+    # Load data
     data = pd.read_csv(FEATURES_FILE)
-    
-    # Prepare features and labels
-    X = data.drop(columns=["image"])
-    y = data["image"]  # Assuming the "image" column contains the labels, adjust as needed
 
-    # Split the data
+    # Prepare data
+    X = data.drop(columns=['image']).values
+    y = data['image'].apply(lambda x: 1 if 'positive_class' in x else 0).values  # Replace 'positive_class' with actual class
+
+    # Check if the number of features matches the expected number for 100x100x3 images
+    num_features = X.shape[1]
+    expected_features = 100 * 100 * 3
+    if num_features != expected_features:
+        raise ValueError(f"Expected {expected_features} features (for 100x100x3 images), but got {num_features}")
+
+    # Reshape data for CNN input
+    X = X.reshape(-1, 100, 100, 3) / 255.0
+    y = np.array(y)
+
+    # Split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Check if the data can be reshaped into (100, 100, 3)
-    num_samples = X_train.shape[0]
-    num_features = X_train.shape[1]
-    if num_features != 300:
-        raise ValueError(f"Expected 300 features (for 100x100x3 images), but got {num_features}")
-
-    # Reshape and normalize the data
-    X_train = X_train.values.reshape(-1, 100, 100, 3) / 255.0
-    X_test = X_test.values.reshape(-1, 100, 100, 3) / 255.0
-    y_train = to_categorical(y_train, NUM_CLASSES)
-    y_test = to_categorical(y_test, NUM_CLASSES)
-
-    # Build the CNN model
+    # Define CNN model
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=(100, 100, 3)),
         MaxPooling2D((2, 2)),
         Conv2D(64, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
         Flatten(),
-        Dense(128, activation='relu'),
-        Dense(NUM_CLASSES, activation='softmax')
+        Dense(64, activation='relu'),
+        Dense(1, activation='sigmoid')
     ])
 
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    # Compile model
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    # Train the model
+    # Train model
     model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
 
-    # Save the model
-    model.save(CNN_MODEL_PATH)
+    # Save model
+    model.save(MODEL_SAVE_PATH)
+    print(f"Model saved to {MODEL_SAVE_PATH}")
 
-def evaluate_cnn(*args):
-    # Load features
-    data = pd.read_csv(FEATURES_FILE)
-    
-    # Prepare features and labels
-    X = data.drop(columns=["image"])
-    y = data["image"]  # Assuming the "image" column contains the labels, adjust as needed
+    return model
 
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Reshape and normalize the data
-    num_samples = X_train.shape[0]
-    num_features = X_train.shape[1]
-    if num_features != 300:
-        raise ValueError(f"Expected 300 features (for 100x100x3 images), but got {num_features}")
-
-    X_train = X_train.values.reshape(-1, 100, 100, 3) / 255.0
-    X_test = X_test.values.reshape(-1, 100, 100, 3) / 255.0
-    y_train = to_categorical(y_train, NUM_CLASSES)
-    y_test = to_categorical(y_test, NUM_CLASSES)
-
-    # Load the model
-    model = load_model(CNN_MODEL_PATH)
-
-    # Evaluate the model
-    y_pred = model.predict(X_test)
-    y_pred_classes = y_pred.argmax(axis=1)
-    results = [{"image": img, "primary_colors": pc.tolist()} for img, pc in zip(X_test.index, y_pred_classes)]
-    with open(CNN_MODEL_RESULTS_FILE, 'w') as f:
-        json.dump(results, f)
+if __name__ == "__main__":
+    train_cnn()
