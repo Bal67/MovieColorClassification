@@ -97,6 +97,25 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     plt.ylabel("Accuracy")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png")
     plt.close()
+
+    # Generate genre color distribution graph
+    genres = data['Genre'].unique()
+    color_columns = [col for col in data.columns if col.startswith('color_')]
+    colors = data[color_columns]
+    
+    plt.figure(figsize=(12, 8))
+    for genre in genres:
+        genre_data = colors[data['Genre'] == genre]
+        genre_colors = genre_data.values.reshape(-1, 3)
+        
+        for i in range(3):
+            plt.hist(genre_colors[:, i], bins=256, alpha=0.5, label=f'{genre} - {"RGB"[i]}')
+    
+    plt.legend(loc='upper right')
+    plt.xlabel("Color value")
+    plt.ylabel("Frequency")
+    plt.title("Genre-wise Distribution of Primary Colors")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/genre_color_distribution.png")
     
 if __name__ == "__main__":
     generate_graphs()

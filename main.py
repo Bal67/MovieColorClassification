@@ -56,48 +56,19 @@ def get_sample_image(test_data):
 # Load and prepare data
 def prepare_data():
     data = pd.read_csv(DATA_FILE)
-    X = data.drop(columns=["image", "label"])
-    y = data["label"]
+    genre_data = pd.read_csv(GENRE_FILE)
+    merged_data = pd.merge(data, genre_data, left_on='image', right_on='Image')
+
+    X = merged_data.drop(columns=["image", "label", "Genre", "Image"])
+    y = merged_data["label"]
 
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
     y_categorical = to_categorical(y_encoded, num_classes=len(np.unique(y_encoded)))
 
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
-    return X_train, X_test, y_train, y_test, y_encoded, data
+    return X_train, X_test, y_train, y_test, y_encoded, merged_data
 
-# Load genre data from the MovieGenre.csv file
-def load_genre_data():
-    genre_file = "/content/drive/My Drive/MovieGenre/archive/MovieGenre.csv"
-    genre_data = pd.read_csv(genre_file)
-    return genre_data
-
-features_data = DATA_FILE.copy()
-
-# Merge genre data with features data
-def merge_data(genre_data, features_data):
-    merged_data_genre = pd.merge(features_data, genre_data, left_on='image', right_on='Image')
-    return merged_data_genre
-
-# Generate genre color distribution graph
-def genre_color_distribution(data):
-    genres = data['Genre'].unique()
-    color_columns = [col for col in data.columns if col.startswith('color_')]
-    colors = data[color_columns]
-    
-    plt.figure(figsize=(12, 8))
-    for genre in genres:
-        genre_data = colors[data['Genre'] == genre]
-        genre_colors = genre_data.values.reshape(-1, 3)
-        
-        for i in range(3):
-            plt.hist(genre_colors[:, i], bins=256, alpha=0.5, label=f'{genre} - {"RGB"[i]}')
-    
-    plt.legend(loc='upper right')
-    plt.xlabel("Color value")
-    plt.ylabel("Frequency")
-    plt.title("Genre-wise Distribution of Primary Colors")
-    plt.show()
 
 # Main function to run the Streamlit app
 def main():
@@ -174,8 +145,9 @@ def main():
         st.write("This graph shows the number of images available for each genre in the dataset, providing an overview of the dataset's class distribution.")
         
         st.header("Genre Color Distribution")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/genre_color_distribution.png", caption="Genre-wise Distribution of Primary Colors")
         st.write("This graph shows the distribution of primary colors for each genre, giving insights into the color patterns associated with different movie genres.")
-        genre_color_distribution(data)
+        
 
 if __name__ == "__main__":
     main()
