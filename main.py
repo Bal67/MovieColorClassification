@@ -1,27 +1,20 @@
-import streamlit as st
-import pickle
-from keras.models import load_model
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
 import numpy as np
+from models.basic_model import train_basic_model
+from models.cnn_model import train_cnn
 
 # Constants
-BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model.pkl"
-CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model.h5"
-FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
+PROCESSED_DATA_DIR = "/content/drive/My Drive/MovieGenre/data/processed"
+FEATURES_FILE = f"{PROCESSED_DATA_DIR}/features.csv"
 
-# Load models
-def load_basic_model():
-    with open(BASIC_MODEL_FILE, 'rb') as f:
-        model = pickle.load(f)
-    return model
+def setup_directories():
+    os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
+    os.makedirs("/content/drive/My Drive/MovieGenre/models", exist_ok=True)
 
-def load_cnn_model():
-    return load_model(CNN_MODEL_FILE)
-
-# Load and prepare data for testing
 def prepare_data():
     data = pd.read_csv(FEATURES_FILE)
     X = data.drop(columns=["image", "label"])
@@ -32,24 +25,24 @@ def prepare_data():
     y_categorical = to_categorical(y_encoded, num_classes=len(np.unique(y_encoded)))
 
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
-    return X_train, X_test, y_train, y_test, y_encoded
+    
+    # Save the data splits
+    np.save(f"{PROCESSED_DATA_DIR}/X_train.npy", X_train)
+    np.save(f"{PROCESSED_DATA_DIR}/X_test.npy", X_test)
+    np.save(f"{PROCESSED_DATA_DIR}/y_train.npy", y_train)
+    np.save(f"{PROCESSED_DATA_DIR}/y_test.npy", y_test)
 
-# Main function to run the Streamlit app
 def main():
-    st.title("Model Accuracies")
+    setup_directories()
+    # Assuming that scripts.make_dataset and scripts.build_features are run separately or here
+    prepare_data()
+    X_train = np.load(f"{PROCESSED_DATA_DIR}/X_train.npy")
+    X_test = np.load(f"{PROCESSED_DATA_DIR}/X_test.npy")
+    y_train = np.load(f"{PROCESSED_DATA_DIR}/y_train.npy")
+    y_test = np.load(f"{PROCESSED_DATA_DIR}/y_test.npy")
 
-    # Load models and data
-    basic_model = load_basic_model()
-    cnn_model = load_cnn_model()
-    X_train, X_test, y_train, y_test, y_encoded = prepare_data()
-
-    # Calculate accuracies
-    basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
-    cnn_model_accuracy = cnn_model.evaluate(X_test, y_test, verbose=0)[1]
-
-    # Display accuracies
-    st.write(f"Basic Model Accuracy: {basic_model_accuracy:.4f}")
-    st.write(f"CNN Model Accuracy: {cnn_model_accuracy:.4f}")
+    train_basic_model(X_train, y_train)
+    train_cnn(X_train, y_train, X_test, y_test)
 
 if __name__ == "__main__":
     main()
