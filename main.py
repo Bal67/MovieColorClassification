@@ -115,7 +115,7 @@ def main():
         st.header("Basic Model")
         sample_image = get_sample_image(data)
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, np.argmax(y_test, axis=1))}")
+        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_test) * 100:.2f}%")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy")
 
     # CNN Model tab
@@ -123,7 +123,7 @@ def main():
         st.header("CNN Model")
         sample_image = get_sample_image(data)
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test, verbose=0)[1]}")
+        st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test)[1]}")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png", caption="CNN Model Accuracy")
     
     # Data Exploration tab
