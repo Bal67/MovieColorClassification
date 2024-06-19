@@ -41,16 +41,23 @@ records = []
 
 for x in tqdm(imdbURLS):
     imdbID = imdbIDS[imdbURLS.index(x)]
-    r = requests.get(x)
-    soup = BeautifulSoup(r.text, 'html.parser')
-    results = soup.find_all('div', attrs={'class':'poster'})
-    if results:
-        first_result = results[0]
-        postername = first_result.find('img')['alt']
-        imgurl = first_result.find('img')['src']
-        records.append((x, postername, imgurl))
-    else:
-        movie = movie[movie.imdbId != imdbID]
+    try:
+        r = requests.get(x)
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text, 'html.parser')
+            results = soup.find_all('div', attrs={'class':'poster'})
+            if results:
+                first_result = results[0]
+                postername = first_result.find('img')['alt']
+                imgurl = first_result.find('img')['src']
+                records.append((x, postername, imgurl))
+            else:
+                print(f"No poster found for {imdbID}")
+                movie = movie[movie.imdbId != imdbID]
+        else:
+            print(f"Failed to retrieve {x}, status code: {r.status_code}")
+    except Exception as e:
+        print(f"Exception for {x}: {e}")
 
 poster_df = pd.DataFrame(records, columns=['imdb_link', 'postername', 'poster_link'])
 df_movietotal = pd.merge(movie, poster_df, on='imdb_link')
