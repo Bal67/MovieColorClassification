@@ -7,6 +7,10 @@ import pickle
 import numpy as np
 from sklearn.cluster import KMeans
 from keras.models import load_model
+from sklearn.preprocessing import LabelEncoder
+from keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
+from scripts.graphs import generate_graphs
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
@@ -49,18 +53,35 @@ def get_sample_image():
     sample_file = os.path.join(TRAINING_IMAGES_FOLDER, files[0])
     return sample_file
 
+# Load and prepare data
+def prepare_data():
+    data = pd.read_csv(DATA_FILE)
+    X = data.drop(columns=["image", "label"])
+    y = data["label"]
+
+    label_encoder = LabelEncoder()
+    y_encoded = label_encoder.fit_transform(y)
+    y_categorical = to_categorical(y_encoded, num_classes=len(np.unique(y_encoded)))
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
+    return X_train, X_test, y_train, y_test, y_encoded, data
+
 # Main function to run the Streamlit app
 def main():
     st.title("Movie Poster Analysis")
 
     # Create tabs
-    tabs = ["Home", "Basic Model", "CNN Model"]
+    tabs = ["Home", "Basic Model", "CNN Model", "Data Exploration"]
     active_tab = st.sidebar.radio("Tabs", tabs)
 
     # Load data and models
+    X_train, X_test, y_train, y_test, y_encoded, data = prepare_data()
     basic_model = load_basic_model()
     cnn_model = load_cnn_model()
     
+    # Generate and save graphs
+    generate_graphs(data, X_test, y_test)
+
     # Home tab
     if active_tab == "Home":
         st.header("Home")
@@ -88,14 +109,23 @@ def main():
         st.header("Basic Model")
         sample_image = get_sample_image()
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_test)}")
+        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, np.argmax(y_test, axis=1))}")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy")
 
     # CNN Model tab
     elif active_tab == "CNN Model":
         st.header("CNN Model")
         sample_image = get_sample_image()
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test)[1]}")
+        st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test, verbose=0)[1]}")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png", caption="CNN Model Accuracy")
+    
+    # Data Exploration tab
+    elif active_tab == "Data Exploration":
+        st.header("Data Exploration")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Distribution of Primary Colors")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Number of Images per Label")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png", caption="Sample Images with Primary Colors")
 
 if __name__ == "__main__":
     main()

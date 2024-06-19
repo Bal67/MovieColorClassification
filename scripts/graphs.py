@@ -35,19 +35,6 @@ def get_primary_colors(image, n_colors=5):
     colors = kmeans.cluster_centers_.astype(int)
     return colors
 
-# Load and prepare data
-def prepare_data():
-    data = pd.read_csv(DATA_FILE)
-    X = data.drop(columns=["image", "label"])
-    y = data["label"]
-
-    label_encoder = LabelEncoder()
-    y_encoded = label_encoder.fit_transform(y)
-    y_categorical = to_categorical(y_encoded, num_classes=len(np.unique(y_encoded)))
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
-    return X_train, X_test, y_train, y_test, y_encoded, data
-
 # Generate and save graphs
 def generate_graphs(data, X_test, y_test):
     plt.figure(figsize=(15, 10))
