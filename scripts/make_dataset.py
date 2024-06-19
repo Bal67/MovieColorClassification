@@ -11,8 +11,10 @@ def download_image(url, save_path):
         response.raise_for_status()
         img = Image.open(BytesIO(response.content)).convert('RGB')
         img.save(save_path)
+        return True
     except Exception as e:
         print(f"Error downloading {url}: {e}")
+        return False
 
 def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     data_path = "/content/drive/MyDrive/MovieGenre/archive"
@@ -50,7 +52,8 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
             poster_filename = os.path.basename(poster)
             poster_path = os.path.join(posters_path, poster_filename)
             if not os.path.exists(poster_path):
-                download_image(poster, poster_path)
+                if not download_image(poster, poster_path):
+                    continue
 
             if os.path.exists(poster_path):
                 try:
