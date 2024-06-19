@@ -11,7 +11,6 @@ def extract_features(images):
         features.append(feature)
     
     features = np.array(features)
-    np.save(os.path.join("data", "processed", "features.npy"), features)
+    np.save(os.path.join("data/processed", "features.npy"), features)
     
     return features
-
