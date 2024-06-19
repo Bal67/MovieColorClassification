@@ -140,6 +140,7 @@ def main():
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy")
 
         # Display predictions from both models
+        primary_colors = get_primary_colors(sample_image)
         image_features = primary_colors.flatten().reshape(1, -1)
         basic_model_pred = basic_model.predict_proba(image_features)
         
