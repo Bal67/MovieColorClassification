@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 import json
 
 # Constants
-FEATURES_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/features.csv"
+FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 CNN_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model.h5"
 CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
 NUM_CLASSES = 10  # Adjust according to your number of classes
