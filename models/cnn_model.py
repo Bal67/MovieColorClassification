@@ -10,10 +10,10 @@ import numpy as np
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 
-def train_cnn(*args, **kwargs):
+def train_cnn():
     # Load features
     data = pd.read_csv(FEATURES_FILE)
-    X = data.drop(columns=['label'])
+    X = data.drop(columns=['label', 'image'])  # Exclude image filenames
     y = data['label']
 
     # Ensure there are at least two classes
@@ -22,7 +22,7 @@ def train_cnn(*args, **kwargs):
 
     # Convert X to 4D tensor
     num_samples = X.shape[0]
-    X_reshaped = X.values.reshape(num_samples, 100, 100, 3) / 255.0
+    X_reshaped = X.values.reshape(num_samples, 5, 3) / 255.0  # Adjust the reshape dimensions based on your feature size
 
     # Convert y to categorical
     y_categorical = to_categorical(y, num_classes=len(y.unique()))
@@ -32,9 +32,7 @@ def train_cnn(*args, **kwargs):
 
     # Build CNN model
     model = Sequential([
-        Conv2D(32, (3, 3), activation='relu', input_shape=(100, 100, 3)),
-        MaxPooling2D((2, 2)),
-        Conv2D(64, (3, 3), activation='relu'),
+        Conv2D(32, (3, 3), activation='relu', input_shape=(5, 3, 1)),  # Adjust input shape
         MaxPooling2D((2, 2)),
         Flatten(),
         Dense(128, activation='relu'),
