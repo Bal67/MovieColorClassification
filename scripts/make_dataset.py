@@ -59,23 +59,37 @@ def save_results(results, results_file):
 
 # Main function
 def main():
-    print("Loading and shuffling images...")
+    print("Loading images...")
     image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.endswith('.jpg')]
-    random.shuffle(image_files)
     
-    train_files = image_files[:TRAIN_SIZE]
-    test_files = image_files[TRAIN_SIZE:TRAIN_SIZE + TEST_SIZE]
+    print("Filtering out unprocessable images...")
+    valid_images = []
+    for image_file in image_files:
+        image_path = os.path.join(IMAGE_FOLDER, image_file)
+        try:
+            Image.open(image_path).convert('RGB')
+            valid_images.append(image_file)
+        except UnidentifiedImageError:
+            print(f"Skipping unprocessable image {image_path}")
+    
+    print(f"Found {len(valid_images)} valid images after filtering.")
+    
+    random.shuffle(valid_images)
+    
+    train_files = valid_images[:TRAIN_SIZE]
+    test_files = valid_images[TRAIN_SIZE:TRAIN_SIZE + TEST_SIZE]
     
     print(f"Analyzing {len(train_files)} images for training set...")
-    train_results, failed_train = analyze_images(train_files, IMAGE_FOLDER)
+    train_results, failed_train_images = analyze_images(train_files, IMAGE_FOLDER)
     save_results(train_results, TRAIN_RESULTS_FILE)
     
     print(f"Analyzing {len(test_files)} images for testing set...")
-    test_results, failed_test = analyze_images(test_files, IMAGE_FOLDER)
+    test_results, failed_test_images = analyze_images(test_files, IMAGE_FOLDER)
     save_results(test_results, TEST_RESULTS_FILE)
     
-    print(f"Successfully processed {len(train_results)} training images, failed to process {len(failed_train)} training images.")
-    print(f"Successfully processed {len(test_results)} testing images, failed to process {len(failed_test)} testing images.")
+    print(f"Successfully processed {len(train_results)} training images.")
+    print(f"Successfully processed {len(test_results)} testing images.")
+    print(f"Failed to process {len(failed_train_images) + len(failed_test_images)} images in total.")
 
 if __name__ == "__main__":
     main()
