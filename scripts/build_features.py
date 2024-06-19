@@ -11,23 +11,16 @@ def load_data(data_file):
         data = json.load(f)
     return data
 
-# Generate labels based on primary colors
-def generate_label(primary_colors):
-    # Use the first primary color to generate a label
-    return int(sum(primary_colors[0]) // 3)
-
 # Process data to build features
 def build_features(data):
     rows = []
-    for dataset in ['train', 'test']:
-        for item in data[dataset]:
-            row = {"image": item["image"]}
-            row["label"] = generate_label(item["primary_colors"])
-            for i, color in enumerate(item["primary_colors"]):
-                row[f"color_{i}_r"] = color[0]
-                row[f"color_{i}_g"] = color[1]
-                row[f"color_{i}_b"] = color[2]
-            rows.append(row)
+    for item in data['train'] + data['test']:
+        row = {"image": item["image"], "label": 1}  # Adding a dummy label for example
+        for i, color in enumerate(item["primary_colors"]):
+            row[f"color_{i}_r"] = color[0]
+            row[f"color_{i}_g"] = color[1]
+            row[f"color_{i}_b"] = color[2]
+        rows.append(row)
     return rows
 
 # Save features to a CSV file

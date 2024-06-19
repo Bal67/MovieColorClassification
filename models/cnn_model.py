@@ -21,7 +21,7 @@ def train_cnn(*args, **kwargs):
 
     # Check if the number of features matches the expected number for 100x100x3 images
     num_features = X.shape[1]
-    expected_features = 100 * 100 * 3
+    expected_features = 100 * 100 * 3  # Since we are treating this as image data
     if num_features != expected_features:
         raise ValueError(f"Expected {expected_features} features (for 100x100x3 images), but got {num_features}")
 
