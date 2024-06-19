@@ -9,8 +9,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # Constants
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 PROCESSED_DIR = "/content/drive/My Drive/MovieGenre/data/processed"
-TRAIN_SIZE = 500
-TEST_SIZE = 50
+TRAIN_SIZE = 250
+TEST_SIZE = 25
 NUM_COLORS = 5
 OUTPUT_FILE = os.path.join(PROCESSED_DIR, "primary_colors.json")
 IMAGE_SIZE = (100, 100)  # Resize images to 100x100 for faster processing
