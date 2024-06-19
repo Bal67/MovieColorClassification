@@ -7,6 +7,9 @@ import pickle
 import numpy as np
 from sklearn.cluster import KMeans
 from keras.models import load_model
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from keras.utils import to_categorical
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
@@ -49,6 +52,19 @@ def get_sample_image():
     sample_file = os.path.join(TRAINING_IMAGES_FOLDER, files[0])
     return sample_file
 
+# Load and prepare data for testing
+def prepare_data():
+    data = pd.read_csv(DATA_FILE)
+    X = data.drop(columns=["image", "label"])
+    y = data["label"]
+
+    label_encoder = LabelEncoder()
+    y_encoded = label_encoder.fit_transform(y)
+    y_categorical = to_categorical(y_encoded, num_classes=len(np.unique(y_encoded)))
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
+    return X_train, X_test, y_train, y_test, y_encoded
+
 # Main function to run the Streamlit app
 def main():
     st.title("Movie Poster Analysis")
@@ -60,7 +76,8 @@ def main():
     # Load data and models
     basic_model = load_basic_model()
     cnn_model = load_cnn_model()
-    
+    X_train, X_test, y_train, y_test, y_encoded = prepare_data()
+
     # Home tab
     if active_tab == "Home":
         st.header("Home")
@@ -88,7 +105,16 @@ def main():
         st.header("Basic Model")
         sample_image = get_sample_image()
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_test)}")
+        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_encoded)}")
+        st.write("General Information:")
+        st.write("The basic model is a logistic regression model that predicts the genre based on the primary colors extracted from the movie poster.")
+        
+        # Display graphs
+        st.write("Graphs:")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images.png")
 
     # CNN Model tab
     elif active_tab == "CNN Model":
@@ -96,6 +122,15 @@ def main():
         sample_image = get_sample_image()
         st.image(sample_image, caption="Sample Training Image", use_column_width=True)
         st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test)[1]}")
+        st.write("General Information:")
+        st.write("The CNN model is a convolutional neural network that predicts the genre based on the primary colors extracted from the movie poster.")
+        
+        # Display graphs
+        st.write("Graphs:")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images.png")
 
 if __name__ == "__main__":
     main()
