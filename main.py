@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import os
 import pandas as pd
 import pickle
@@ -84,53 +84,62 @@ def main():
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
         if uploaded_file is not None:
-            image = Image.open(uploaded_file).convert("RGB")
-            primary_colors = get_primary_colors(image)
-            display_primary_colors(uploaded_file, primary_colors)
+            try:
+                image = Image.open(uploaded_file).convert("RGB")
+                primary_colors = get_primary_colors(image)
+                display_primary_colors(uploaded_file, primary_colors)
 
-            # Display predictions from both models
-            image_features = primary_colors.flatten().reshape(1, -1)
-            basic_model_pred = basic_model.predict(image_features)
-            cnn_model_pred = cnn_model.predict(image_features)
+                # Display predictions from both models
+                image_features = primary_colors.flatten().reshape(1, -1)
+                basic_model_pred = basic_model.predict(image_features)
+                cnn_model_pred = cnn_model.predict(image_features)
 
-            # Display results in a table
-            results_df = pd.DataFrame({
-                "Model": ["Basic Model", "CNN Model"],
-                "Prediction": [basic_model_pred[0], cnn_model_pred[0]]
-            })
-            st.table(results_df)
+                # Display results in a table
+                results_df = pd.DataFrame({
+                    "Model": ["Basic Model", "CNN Model"],
+                    "Prediction": [basic_model_pred[0], cnn_model_pred[0]]
+                })
+                st.table(results_df)
+            except UnidentifiedImageError:
+                st.error("Unable to process the uploaded image. Please upload a valid image file.")
 
     # Basic Model tab
     elif active_tab == "Basic Model":
         st.header("Basic Model")
-        sample_image = get_sample_image()
-        st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_encoded)}")
-        st.write("General Information:")
-        st.write("The basic model is a logistic regression model that predicts the genre based on the primary colors extracted from the movie poster.")
-        
-        # Display graphs
-        st.write("Graphs:")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images.png")
+        try:
+            sample_image = get_sample_image()
+            st.image(sample_image, caption="Sample Training Image", use_column_width=True)
+            st.write(f"Basic Model Accuracy: {basic_model.score(X_test, y_encoded)}")
+            st.write("General Information:")
+            st.write("The basic model is a logistic regression model that predicts the genre based on the primary colors extracted from the movie poster.")
+            
+            # Display graphs
+            st.write("Graphs:")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images.png")
+        except Exception as e:
+            st.error(f"Error displaying Basic Model tab: {e}")
 
     # CNN Model tab
     elif active_tab == "CNN Model":
         st.header("CNN Model")
-        sample_image = get_sample_image()
-        st.image(sample_image, caption="Sample Training Image", use_column_width=True)
-        st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test)[1]}")
-        st.write("General Information:")
-        st.write("The CNN model is a convolutional neural network that predicts the genre based on the primary colors extracted from the movie poster.")
-        
-        # Display graphs
-        st.write("Graphs:")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images.png")
+        try:
+            sample_image = get_sample_image()
+            st.image(sample_image, caption="Sample Training Image", use_column_width=True)
+            st.write(f"CNN Model Accuracy: {cnn_model.evaluate(X_test, y_test)[1]}")
+            st.write("General Information:")
+            st.write("The CNN model is a convolutional neural network that predicts the genre based on the primary colors extracted from the movie poster.")
+            
+            # Display graphs
+            st.write("Graphs:")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
+            st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images.png")
+        except Exception as e:
+            st.error(f"Error displaying CNN Model tab: {e}")
 
 if __name__ == "__main__":
     main()
