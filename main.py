@@ -27,11 +27,13 @@ def main():
     st.title("Movie Poster Primary Colors")
 
     # Train and evaluate models
-    st.write("Training Basic Model...")
-    basic_model_result = train_basic_model()
+    if st.button("Train Basic Model"):
+        st.write("Training Basic Model...")
+        train_basic_model()
 
-    st.write("Training CNN Model...")
-    cnn_model_result = train_cnn()
+    if st.button("Train CNN Model"):
+        st.write("Training CNN Model...")
+        train_cnn()
 
     # Choose model to display results
     model_choice = st.selectbox("Choose Model", ["Basic Model", "CNN Model"])

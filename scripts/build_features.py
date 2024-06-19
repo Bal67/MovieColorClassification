@@ -11,15 +11,23 @@ def load_data(data_file):
         data = json.load(f)
     return data
 
+# Generate labels based on primary colors
+def generate_label(primary_colors):
+    # Use the first primary color to generate a label
+    # Here we simply convert the RGB value to a single number
+    # You can customize this logic to suit your needs
+    return int(sum(primary_colors[0]) // 3)
+
 # Process data to build features
 def build_features(data):
     rows = []
-    for item in data['train']:
+    for item in data:
         row = {"image": item["image"]}
-        primary_colors = item["primary_colors"]
-        # Flatten the primary colors to match the expected feature shape
-        flattened_colors = [color for colors in primary_colors for color in colors]
-        row.update({f"color_{i}": color for i, color in enumerate(flattened_colors)})
+        row["label"] = generate_label(item["primary_colors"])
+        for i, color in enumerate(item["primary_colors"]):
+            row[f"color_{i}_r"] = color[0]
+            row[f"color_{i}_g"] = color[1]
+            row[f"color_{i}_b"] = color[2]
         rows.append(row)
     return rows
 

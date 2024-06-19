@@ -4,18 +4,20 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from sklearn.model_selection import train_test_split
+import json
 
 # Constants
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
+PREDICTIONS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/cnn_model_predictions.json"
 
-def train_cnn(*args):
+def train_cnn():
     # Load data
     data = pd.read_csv(FEATURES_FILE)
 
     # Prepare data
-    X = data.drop(columns=['image']).values
-    y = data['image'].apply(lambda x: 1 if 'positive_class' in x else 0).values  # Replace 'positive_class' with actual class
+    X = data.drop(columns=['image', 'label']).values
+    y = data['label'].values
 
     # Check if the number of features matches the expected number for 100x100x3 images
     num_features = X.shape[1]
@@ -50,6 +52,12 @@ def train_cnn(*args):
     # Save model
     model.save(MODEL_SAVE_PATH)
     print(f"Model saved to {MODEL_SAVE_PATH}")
+
+    # Save predictions
+    predictions = [{"image": img, "primary_colors": data.iloc[i, 2:].values.tolist()} for i, img in enumerate(data['image'])]  # Assuming primary colors are precomputed
+    with open(PREDICTIONS_FILE, 'w') as f:
+        json.dump(predictions, f)
+    print(f"Predictions saved to {PREDICTIONS_FILE}")
 
     return model
 
