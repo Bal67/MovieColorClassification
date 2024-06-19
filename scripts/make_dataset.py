@@ -26,6 +26,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     images = []
     labels = []
     num_missing = 0
+    valid_entries = 0
 
     for index, row in df.iterrows():
         poster = row['Poster']
@@ -36,6 +37,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
                     image = Image.open(poster_path).convert('RGB').resize((128, 128))
                     images.append(np.array(image))
                     labels.append(row['Genre'])
+                    valid_entries += 1
                 except Exception as e:  # Handle potential errors during image processing
                     print(f"Error processing image {poster_path}: {e}")
                     num_missing += 1  # Increment missing image count
@@ -45,6 +47,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
                 elif missing_value_strategy == "default":
                     images.append(np.zeros((128, 128, 3)))  # Default image (all zeros)
                     labels.append(default_genre)
+                    valid_entries += 1
                 else:
                     raise ValueError(f"Invalid missing_value_strategy: {missing_value_strategy}")
         else:
@@ -53,12 +56,14 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
             elif missing_value_strategy == "default":
                 images.append(np.zeros((128, 128, 3)))  # Default image (all zeros)
                 labels.append(default_genre)
+                valid_entries += 1
             else:
                 raise ValueError(f"Invalid missing_value_strategy: {missing_value_strategy}")
 
     images = np.array(images)
     labels = np.array(labels)
 
+    print(f"Found {valid_entries} valid entries.")
     if num_missing > 0:
         print(f"Handled {num_missing} entries due to missing images.")
 
