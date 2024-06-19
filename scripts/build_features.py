@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from skimage.color import rgb2gray
 from skimage.feature import hog
@@ -11,6 +10,5 @@ def extract_features(images):
         features.append(feature)
     
     features = np.array(features)
-    np.save(os.path.join("data/processed", "features.npy"), features)
     
     return features

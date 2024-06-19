@@ -1,56 +1,24 @@
-import os
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torchvision import transforms
-
-class SimpleCNN(nn.Module):
-    def __init__(self):
-        super(SimpleCNN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=3)
-        self.pool = nn.MaxPool2d(kernel_size=2)
-        self.fc1 = nn.Linear(32 * 62 * 62, 10)
-    
-    def forward(self, x):
-        x = self.pool(nn.functional.relu(self.conv1(x)))
-        x = x.view(-1, 32 * 62 * 62)
-        x = self.fc1(x)
-        return x
+import numpy as np
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.utils import to_categorical
 
 def train_cnn(images, labels):
-    cnn = SimpleCNN()
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(cnn.parameters(), lr=0.001)
+    X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
+    y_train = to_categorical(y_train)
+    y_test = to_categorical(y_test)
     
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,))
+    model = Sequential([
+        Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
+        MaxPooling2D((2, 2)),
+        Flatten(),
+        Dense(64, activation='relu'),
+        Dense(y_train.shape[1], activation='softmax')
     ])
     
-    images = torch.tensor(images).permute(0, 3, 1, 2).float()
-    labels = torch.tensor(labels)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
     
-    for epoch in range(5):
-        optimizer.zero_grad()
-        outputs = cnn(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-    
-    torch.save(cnn.state_dict(), os.path.join("models", "cnn_model.pth"))
-
-def load_cnn_model():
-    cnn_model = SimpleCNN()
-    cnn_model.load_state_dict(torch.load(os.path.join("models", "cnn_model.pth")))
-    return cnn_model
-
-def predict_cnn(model, image):
-    transform = transforms.Compose([
-        transforms.Resize((128, 128)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,))
-    ])
-    image = transform(image).unsqueeze(0)
-    output = model(image)
-    _, pred = torch.max(output, 1)
-    return pred.item()
+    loss, accuracy = model.evaluate(X_test, y_test)
+    print(f"CNN Model Accuracy: {accuracy}")

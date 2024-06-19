@@ -24,7 +24,4 @@ def prepare_data():
     images = np.array(images)
     labels = np.array(labels)
     
-    np.save(os.path.join("data/processed", "images.npy"), images)
-    np.save(os.path.join("data/processed", "labels.npy"), labels)
-    
     return images, labels

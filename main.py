@@ -10,8 +10,8 @@ st.write('This is a simple Streamlit app to classify movie genres based on poste
 model = np.load("models/basic_model.py", allow_pickle=True).item()
 
 # Load the test images
-images = np.load("data/processed/images.npy")
-labels = np.load("data/processed/labels.npy")
+images = np.load("data/processed/images.py")
+labels = np.load("data/processed/labels.py")
 
 # Add a file uploader to upload an image
 uploaded_file = st.file_uploader("Choose an image...", type="jpg")
