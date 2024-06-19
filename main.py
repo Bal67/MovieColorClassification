@@ -1,22 +1,32 @@
 import streamlit as st
-from PIL import Image
-from models.basic_model import load_basic_model, predict_basic
-from models.cnn_model import load_cnn_model, predict_cnn
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
-# Load models
-basic_model = load_basic_model()
-cnn_model = load_cnn_model()
+st.title('Movie Genre Classification')
 
-st.title("Movie Poster Genre Classification")
-uploaded_file = st.file_uploader("Choose a movie poster image...", type="jpg")
+st.write('This is a simple Streamlit app to classify movie genres based on posters.')
+
+# Load the trained model
+model = np.load("models/basic_model.npy", allow_pickle=True).item()
+
+# Load the test images
+images = np.load("data/processed/images.npy")
+labels = np.load("data/processed/labels.npy")
+
+# Add a file uploader to upload an image
+uploaded_file = st.file_uploader("Choose an image...", type="jpg")
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)
+    image = Image.open(uploaded_file).convert('RGB').resize((128, 128))
     st.image(image, caption='Uploaded Image.', use_column_width=True)
+    st.write("")
     st.write("Classifying...")
     
-    pred_basic = predict_basic(basic_model, image)
-    pred_cnn = predict_cnn(cnn_model, image)
+    # Preprocess the image
+    image = np.array(image)
+    image = image.reshape(1, -1)
     
-    st.write(f"Basic Model Prediction: {pred_basic}")
-    st.write(f"CNN Model Prediction: {pred_cnn}")
+    # Predict the genre
+    prediction = model.predict(image)
+    st.write(f'Predicted Genre: {prediction[0]}')
+

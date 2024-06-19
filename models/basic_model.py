@@ -1,16 +1,13 @@
-import os
 import numpy as np
-from skimage.color import rgb2gray
-from skimage.feature import hog
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
-def extract_features(images):
-    features = []
-    for img in images:
-        img_gray = rgb2gray(img)
-        feature = hog(img_gray, pixels_per_cell=(16, 16))
-        features.append(feature)
-    
-    features = np.array(features)
-    np.save(os.path.join("data/processed", "features.npy"), features)
-    
-    return features
+def train_basic_model(features, labels):
+    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Model Accuracy: {accuracy}")
+    np.save("models/basic_model.npy", model)
