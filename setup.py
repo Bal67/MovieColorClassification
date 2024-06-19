@@ -9,17 +9,16 @@ from models.cnn_model import train_cnn
 def download_data():
     url = "https://www.kaggle.com/neha1703/movie-genre-from-its-poster/download"
     data_path = os.path.join("data", "raw")
+    os.makedirs(data_path, exist_ok=True)
     
-    # Ensure the directory does not already exist to avoid errors
-    if not os.path.exists(data_path):
-        os.makedirs(data_path, exist_ok=True)
+    zip_path = os.path.join(data_path, "movie_poster_dataset.zip")
     
     response = requests.get(url, stream=True)
-    with open(os.path.join(data_path, "movie_poster_dataset.zip"), "wb") as file:
+    with open(zip_path, "wb") as file:
         for chunk in response.iter_content(chunk_size=128):
             file.write(chunk)
     
-    with ZipFile(os.path.join(data_path, "movie_poster_dataset.zip"), 'r') as zip_ref:
+    with ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(data_path)
 
 if __name__ == "__main__":
