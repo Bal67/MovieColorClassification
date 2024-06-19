@@ -12,6 +12,7 @@ DATA_PATH = "/content/drive/MyDrive/MovieGenre/archive"
 CSV_PATH = os.path.join(DATA_PATH, "MovieGenre.csv")
 TRAIN_POSTERS_PATH = os.path.join(DATA_PATH, "TrainPosters")
 TEST_POSTERS_PATH = os.path.join(DATA_PATH, "SampleMoviePosters")
+SAMPLE_SIZE = 500
 
 # Ensure directories exist
 os.makedirs(TRAIN_POSTERS_PATH, exist_ok=True)
@@ -51,6 +52,8 @@ def prepare_data():
         print(f"Error reading CSV file: {e}")
         return np.array([]), np.array([]), np.array([]), np.array([])
 
+    # Sample the data
+    df = df.sample(n=SAMPLE_SIZE, random_state=42)
     print(f"CSV loaded successfully. Number of rows: {len(df)}")
 
     train_images, train_labels, test_images, test_labels = [], [], [], []
@@ -67,7 +70,7 @@ def prepare_data():
         poster_url = get_poster_url(imdb_link)
         if poster_url:
             # Download and process training images
-            if download_image(poster_url, train_pposter_path):
+            if download_image(poster_url, train_poster_path):
                 download_success += 1
                 try:
                     image = Image.open(train_poster_path).convert('RGB').resize((128, 128))
