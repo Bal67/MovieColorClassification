@@ -4,7 +4,9 @@ from PIL import Image
 import os
 import pandas as pd
 import pickle
+import numpy as np
 from sklearn.cluster import KMeans
+from keras.models import load_model
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model.pkl"
@@ -21,19 +23,13 @@ def load_basic_model():
     return model
 
 def load_cnn_model():
-    from keras.models import load_model
     return load_model(CNN_MODEL_FILE)
-
-# Load the primary colors data
-def load_primary_colors(data_file):
-    with open(data_file, 'r') as f:
-        return json.load(f)
 
 # Extract primary colors
 def get_primary_colors(image, n_colors=N_COLORS):
     image_array = np.array(image)
     pixels = image_array.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=n_colors)
+    kmeans = KMeans(n_clusters=n_colors, n_init=10)
     kmeans.fit(pixels)
     colors = kmeans.cluster_centers_.astype(int)
     return colors
@@ -64,8 +60,7 @@ def main():
     # Load data and models
     basic_model = load_basic_model()
     cnn_model = load_cnn_model()
-    primary_colors_data = load_primary_colors(PRIMARY_COLORS_FILE)
-
+    
     # Home tab
     if active_tab == "Home":
         st.header("Home")
