@@ -11,13 +11,17 @@ FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 PREDICTIONS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/cnn_model_predictions.json"
 
-def train_cnn(*args, **kwargs):
+def train_cnn():
     # Load data
     data = pd.read_csv(FEATURES_FILE)
 
     # Prepare data
     X = data.drop(columns=['image', 'label']).values
     y = data['label'].values
+
+    # Encode labels
+    label_to_int = {label: i for i, label in enumerate(np.unique(y))}
+    y = np.array([label_to_int[label] for label in y])
 
     # Check if the number of features matches the expected number for 100x100x3 images
     num_features = X.shape[1]
@@ -27,7 +31,6 @@ def train_cnn(*args, **kwargs):
 
     # Reshape data for CNN input
     X = X.reshape(-1, 100, 100, 3) / 255.0
-    y = np.array(y)
 
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -40,11 +43,11 @@ def train_cnn(*args, **kwargs):
         MaxPooling2D((2, 2)),
         Flatten(),
         Dense(64, activation='relu'),
-        Dense(1, activation='sigmoid')
+        Dense(len(label_to_int), activation='softmax')
     ])
 
     # Compile model
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     # Train model
     model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
@@ -54,9 +57,11 @@ def train_cnn(*args, **kwargs):
     print(f"Model saved to {MODEL_SAVE_PATH}")
 
     # Save predictions
-    predictions = [{"image": img, "primary_colors": data.iloc[i, 2:].values.tolist()} for i, img in enumerate(data['image'])] 
+    predictions = model.predict(X_test)
+    predicted_labels = [np.argmax(pred) for pred in predictions]
+    results = [{"image": data.iloc[i]['image'], "predicted_color": list(label_to_int.keys())[label]} for i, label in enumerate(predicted_labels)]
     with open(PREDICTIONS_FILE, 'w') as f:
-        json.dump(predictions, f)
+        json.dump(results, f)
     print(f"Predictions saved to {PREDICTIONS_FILE}")
 
     return model

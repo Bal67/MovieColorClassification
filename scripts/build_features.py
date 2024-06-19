@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import numpy as np
 
 # Constants
 DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/primary_colors.json"
@@ -11,12 +12,21 @@ def load_data(data_file):
         data = json.load(f)
     return data
 
+# Determine the most dominant primary color
+def get_dominant_color(primary_colors):
+    color_sums = np.sum(primary_colors, axis=0)
+    color_names = ["Red", "Green", "Blue", "Yellow"]
+    dominant_color = color_names[np.argmax(color_sums)]
+    return dominant_color
+
 # Process data to build features
 def build_features(data):
     rows = []
     for item in data['train'] + data['test']:
-        row = {"image": item["image"], "label": 1}  # Adding a dummy label for example
-        for i, color in enumerate(item["primary_colors"]):
+        primary_colors = item["primary_colors"]
+        dominant_color = get_dominant_color(primary_colors)
+        row = {"image": item["image"], "label": dominant_color}
+        for i, color in enumerate(primary_colors):
             row[f"color_{i}_r"] = color[0]
             row[f"color_{i}_g"] = color[1]
             row[f"color_{i}_b"] = color[2]
