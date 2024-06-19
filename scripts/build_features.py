@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 # Constants
-DATA_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/primary_colors.json"
+DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/primary_colors.json"
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/features.csv"
 
 # Load data
