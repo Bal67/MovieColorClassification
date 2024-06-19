@@ -1,6 +1,6 @@
 import os
 import requests
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 from scripts.make_dataset import prepare_data
 from scripts.build_features import extract_features
 from models.basic_model import train_basic_model
@@ -21,12 +21,20 @@ def download_data():
     zip_path = os.path.join(data_path, "movie_poster_dataset.zip")
     
     response = requests.get(url, stream=True)
-    with open(zip_path, "wb") as file:
-        for chunk in response.iter_content(chunk_size=128):
-            file.write(chunk)
+    if response.status_code == 200:
+        with open(zip_path, "wb") as file:
+            for chunk in response.iter_content(chunk_size=128):
+                file.write(chunk)
+    else:
+        print("Failed to download the file. Status code:", response.status_code)
+        return
     
-    with ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(data_path)
+    try:
+        with ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(data_path)
+    except BadZipFile:
+        print("The downloaded file is not a zip file.")
+        os.remove(zip_path)
 
 if __name__ == "__main__":
     download_data()
