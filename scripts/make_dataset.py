@@ -1,104 +1,89 @@
 import os
-import numpy as np
-import pandas as pd
-from PIL import Image, UnidentifiedImageError
-from sklearn.cluster import KMeans
-from collections import Counter
 import json
 import random
+from PIL import Image
+from sklearn.cluster import KMeans
+from collections import Counter
 
 # Constants
-IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
-TRAIN_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/train_primary_colors.json"
-TEST_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/test_primary_colors.json"
-NUM_CLUSTERS = 5
-TRAIN_SIZE = 250
-TEST_SIZE = 25
+IMAGE_FOLDER = "../data/posters"
+PROCESSED_DIR = "../data/processed"
+TRAIN_SIZE = 500
+TEST_SIZE = 50
+NUM_COLORS = 5
+OUTPUT_FILE = os.path.join(PROCESSED_DIR, "primary_colors.json")
 
-# Function to extract primary colors from an image
-def get_primary_colors(image_path, num_clusters=NUM_CLUSTERS):
-    try:
-        image = Image.open(image_path).convert('RGB')
-        image = image.resize((150, 150))  # Resize for faster processing
-        image_array = np.array(image)
-        image_array = image_array.reshape((-1, 3))
-        
-        kmeans = KMeans(n_clusters=num_clusters, n_init=10)
-        kmeans.fit(image_array)
-        
-        colors = kmeans.cluster_centers_
-        counts = Counter(kmeans.labels_)
-        
-        # Sort colors by frequency
-        sorted_colors = [colors[i] for i in counts.keys()]
-        return sorted_colors
-    except Exception as e:
-        print(f"Failed to process image {image_path}: {e}")
-        return None
+# Ensure the processed directory exists
+os.makedirs(PROCESSED_DIR, exist_ok=True)
 
-# Load images and analyze primary colors
-def analyze_images(image_files, image_folder):
-    results = []
-    failed_images = []
-    for image_file in image_files:
-        image_path = os.path.join(image_folder, image_file)
-        primary_colors = get_primary_colors(image_path)
-        if primary_colors is not None:
-            primary_colors = [tuple(map(int, color)) for color in primary_colors]  # Convert to int tuples
-            results.append({
-                "image": image_file,
-                "primary_colors": primary_colors
-            })
-        else:
-            failed_images.append(image_file)
-    
-    return results, failed_images
+def load_images(image_folder):
+    image_files = [f for f in os.listdir(image_folder) if f.endswith('.jpg')]
+    return image_files
 
-# Save results to a JSON file
-def save_results(results, results_file):
-    with open(results_file, 'w') as f:
-        json.dump(results, f)
-    print(f"Results saved to {results_file}")
-
-# Main function
-def main():
-    print("Loading images...")
-    image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.endswith('.jpg')]
-    
-    print("Filtering out unprocessable images...")
+def filter_unprocessable_images(image_files):
     valid_images = []
     for image_file in image_files:
         image_path = os.path.join(IMAGE_FOLDER, image_file)
         try:
-            Image.open(image_path).convert('RGB')
+            with Image.open(image_path) as img:
+                img.verify()
             valid_images.append(image_file)
-        except UnidentifiedImageError:
-            print(f"Skipping unprocessable image {image_path}")
+        except (IOError, SyntaxError):
+            continue
+    return valid_images
+
+def get_primary_colors(image_path):
+    image = Image.open(image_path).convert('RGB')
+    image = image.resize((150, 150))
+    pixels = list(image.getdata())
+    kmeans = KMeans(n_clusters=NUM_COLORS)
+    kmeans.fit(pixels)
+    counter = Counter(kmeans.labels_)
+    primary_colors = [kmeans.cluster_centers_[i] for i in counter.keys()]
+    return primary_colors
+
+def analyze_images(image_files, image_folder):
+    results = []
+    for image_file in image_files:
+        image_path = os.path.join(image_folder, image_file)
+        try:
+            primary_colors = get_primary_colors(image_path)
+            results.append({"image": image_file, "primary_colors": primary_colors})
         except Exception as e:
-            print(f"Error opening image {image_path}: {e}")
-    
+            continue
+    return results
+
+def main():
+    print("Loading images...")
+    image_files = load_images(IMAGE_FOLDER)
+    print("Filtering out unprocessable images...")
+    valid_images = filter_unprocessable_images(image_files)
     print(f"Found {len(valid_images)} valid images after filtering.")
-    
-    if len(valid_images) < (TRAIN_SIZE + TEST_SIZE):
-        print(f"Not enough valid images to meet the required dataset size. Found {len(valid_images)} valid images.")
-        return
-    
+
     random.shuffle(valid_images)
-    
     train_files = valid_images[:TRAIN_SIZE]
     test_files = valid_images[TRAIN_SIZE:TRAIN_SIZE + TEST_SIZE]
-    
+
     print(f"Analyzing {len(train_files)} images for training set...")
-    train_results, failed_train_images = analyze_images(train_files, IMAGE_FOLDER)
-    save_results(train_results, TRAIN_RESULTS_FILE)
-    
+    train_results = analyze_images(train_files, IMAGE_FOLDER)
+
     print(f"Analyzing {len(test_files)} images for testing set...")
-    test_results, failed_test_images = analyze_images(test_files, IMAGE_FOLDER)
-    save_results(test_results, TEST_RESULTS_FILE)
-    
-    print(f"Successfully processed {len(train_results)} training images.")
-    print(f"Successfully processed {len(test_results)} testing images.")
-    print(f"Failed to process {len(failed_train_images) + len(failed_test_images)} images in total.")
+    test_results = analyze_images(test_files, IMAGE_FOLDER)
+
+    if len(train_results) < TRAIN_SIZE or len(test_results) < TEST_SIZE:
+        print("Insufficient data prepared. Exiting.")
+        return
+
+    print("Saving results...")
+    results = {
+        "train": train_results,
+        "test": test_results
+    }
+
+    with open(OUTPUT_FILE, 'w') as f:
+        json.dump(results, f)
+
+    print(f"Results saved to {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     main()
