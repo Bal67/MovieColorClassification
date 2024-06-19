@@ -10,6 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
 from keras.models import load_model
 
+
 TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
@@ -48,7 +49,7 @@ def prepare_data():
     return X_train, X_test, y_train, y_test, y_encoded, data
 
 # Generate and save graphs
-def generate_graphs(data):
+def generate_graphs(data, X_test, y_test):
     plt.figure(figsize=(15, 10))
     
     # Sample images with primary colors
