@@ -17,20 +17,24 @@ TEST_SIZE = 25
 
 # Function to extract primary colors from an image
 def get_primary_colors(image_path, num_clusters=NUM_CLUSTERS):
-    image = Image.open(image_path).convert('RGB')
-    image = image.resize((150, 150))  # Resize for faster processing
-    image_array = np.array(image)
-    image_array = image_array.reshape((-1, 3))
-    
-    kmeans = KMeans(n_clusters=num_clusters, n_init=10)
-    kmeans.fit(image_array)
-    
-    colors = kmeans.cluster_centers_
-    counts = Counter(kmeans.labels_)
-    
-    # Sort colors by frequency
-    sorted_colors = [colors[i] for i in counts.keys()]
-    return sorted_colors
+    try:
+        image = Image.open(image_path).convert('RGB')
+        image = image.resize((150, 150))  # Resize for faster processing
+        image_array = np.array(image)
+        image_array = image_array.reshape((-1, 3))
+        
+        kmeans = KMeans(n_clusters=num_clusters, n_init=10)
+        kmeans.fit(image_array)
+        
+        colors = kmeans.cluster_centers_
+        counts = Counter(kmeans.labels_)
+        
+        # Sort colors by frequency
+        sorted_colors = [colors[i] for i in counts.keys()]
+        return sorted_colors
+    except Exception as e:
+        print(f"Failed to process image {image_path}: {e}")
+        return None
 
 # Load images and analyze primary colors
 def analyze_images(image_files, image_folder):
@@ -38,16 +42,15 @@ def analyze_images(image_files, image_folder):
     failed_images = []
     for image_file in image_files:
         image_path = os.path.join(image_folder, image_file)
-        try:
-            primary_colors = get_primary_colors(image_path)
+        primary_colors = get_primary_colors(image_path)
+        if primary_colors is not None:
             primary_colors = [tuple(map(int, color)) for color in primary_colors]  # Convert to int tuples
             results.append({
                 "image": image_file,
                 "primary_colors": primary_colors
             })
-        except UnidentifiedImageError:
+        else:
             failed_images.append(image_file)
-            print(f"Failed to process image {image_path}")
     
     return results, failed_images
 
@@ -71,8 +74,14 @@ def main():
             valid_images.append(image_file)
         except UnidentifiedImageError:
             print(f"Skipping unprocessable image {image_path}")
+        except Exception as e:
+            print(f"Error opening image {image_path}: {e}")
     
     print(f"Found {len(valid_images)} valid images after filtering.")
+    
+    if len(valid_images) < (TRAIN_SIZE + TEST_SIZE):
+        print(f"Not enough valid images to meet the required dataset size. Found {len(valid_images)} valid images.")
+        return
     
     random.shuffle(valid_images)
     
