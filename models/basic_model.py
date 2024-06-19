@@ -7,7 +7,8 @@ import os
 
 def train_basic_model(features, labels):
     if len(features) == 0 or len(labels) == 0:
-        raise ValueError("No valid data to train on.")
+        print("No valid data to train on.")
+        return
     
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
     model = RandomForestClassifier()
