@@ -8,8 +8,8 @@ from collections import Counter
 # Constants
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 PROCESSED_DIR = "/content/drive/My Drive/MovieGenre/data/processed"
-TRAIN_SIZE = 250
-TEST_SIZE = 25
+TRAIN_SIZE = 500
+TEST_SIZE = 50
 NUM_COLORS = 5
 OUTPUT_FILE = os.path.join(PROCESSED_DIR, "primary_colors.json")
 
@@ -36,7 +36,7 @@ def get_primary_colors(image_path):
     image = Image.open(image_path).convert('RGB')
     image = image.resize((150, 150))
     pixels = list(image.getdata())
-    kmeans = KMeans(n_clusters=NUM_COLORS)
+    kmeans = KMeans(n_clusters=NUM_COLORS, n_init=10)
     kmeans.fit(pixels)
     counter = Counter(kmeans.labels_)
     primary_colors = [kmeans.cluster_centers_[i] for i in counter.keys()]
@@ -56,6 +56,7 @@ def analyze_images(image_files, image_folder):
 def main():
     print("Loading images...")
     image_files = load_images(IMAGE_FOLDER)
+    
     print("Filtering out unprocessable images...")
     valid_images = filter_unprocessable_images(image_files)
     print(f"Found {len(valid_images)} valid images after filtering.")
@@ -66,24 +67,18 @@ def main():
 
     print(f"Analyzing {len(train_files)} images for training set...")
     train_results = analyze_images(train_files, IMAGE_FOLDER)
-
-    print(f"Analyzing {len(test_files)} images for testing set...")
+    print(f"Analyzing {len(test_files)} images for test set...")
     test_results = analyze_images(test_files, IMAGE_FOLDER)
 
-    if len(train_results) < TRAIN_SIZE or len(test_results) < TEST_SIZE:
-        print("Insufficient data prepared. Exiting.")
-        return
-
-    print("Saving results...")
-    results = {
+    data = {
         "train": train_results,
         "test": test_results
     }
 
     with open(OUTPUT_FILE, 'w') as f:
-        json.dump(results, f)
+        json.dump(data, f)
 
-    print(f"Results saved to {OUTPUT_FILE}")
+    print(f"Dataset creation completed. Data saved to {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     main()
