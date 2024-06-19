@@ -37,9 +37,9 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     num_processed = 0
 
     for index, row in df.iterrows():
-        poster = row['Poster']
-        if isinstance(poster, str) and poster:
-            poster_filename = os.path.basename(poster)
+        poster_url = row['Poster']
+        if isinstance(poster_url, str) and poster_url:
+            poster_filename = os.path.basename(poster_url)
             poster_path = os.path.join(posters_path, poster_filename)
 
             if os.path.exists(poster_path):
