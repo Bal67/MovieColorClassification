@@ -4,6 +4,7 @@ import random
 from PIL import Image
 from sklearn.cluster import KMeans
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Constants
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
@@ -12,6 +13,8 @@ TRAIN_SIZE = 500
 TEST_SIZE = 50
 NUM_COLORS = 5
 OUTPUT_FILE = os.path.join(PROCESSED_DIR, "primary_colors.json")
+IMAGE_SIZE = (100, 100)  # Resize images to 100x100 for faster processing
+MAX_WORKERS = 4  # Number of parallel workers
 
 # Ensure the processed directory exists
 os.makedirs(PROCESSED_DIR, exist_ok=True)
@@ -34,23 +37,30 @@ def filter_unprocessable_images(image_files):
 
 def get_primary_colors(image_path):
     image = Image.open(image_path).convert('RGB')
-    image = image.resize((150, 150))
+    image = image.resize(IMAGE_SIZE)
     pixels = list(image.getdata())
     kmeans = KMeans(n_clusters=NUM_COLORS, n_init=10)
     kmeans.fit(pixels)
     counter = Counter(kmeans.labels_)
-    primary_colors = [kmeans.cluster_centers_[i] for i in counter.keys()]
+    primary_colors = [kmeans.cluster_centers_[i].tolist() for i in counter.keys()]
     return primary_colors
+
+def analyze_image(image_file, image_folder):
+    image_path = os.path.join(image_folder, image_file)
+    try:
+        primary_colors = get_primary_colors(image_path)
+        return {"image": image_file, "primary_colors": primary_colors}
+    except Exception as e:
+        return None
 
 def analyze_images(image_files, image_folder):
     results = []
-    for image_file in image_files:
-        image_path = os.path.join(image_folder, image_file)
-        try:
-            primary_colors = get_primary_colors(image_path)
-            results.append({"image": image_file, "primary_colors": primary_colors})
-        except Exception as e:
-            continue
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {executor.submit(analyze_image, image_file, image_folder): image_file for image_file in image_files}
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                results.append(result)
     return results
 
 def main():
