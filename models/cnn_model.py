@@ -10,7 +10,7 @@ import numpy as np
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 
-def train_cnn():
+def train_cnn(*args, **kwargs):
     # Load features
     data = pd.read_csv(FEATURES_FILE)
     X = data.drop(columns=['label', 'image'])  # Exclude image filenames
@@ -22,7 +22,7 @@ def train_cnn():
 
     # Convert X to 4D tensor
     num_samples = X.shape[0]
-    X_reshaped = X.values.reshape(num_samples, 5, 3) / 255.0  # Adjust the reshape dimensions based on your feature size
+    X_reshaped = X.values.reshape(num_samples, 5, 3, 1) / 255.0  # Adjust the reshape dimensions based on your feature size
 
     # Convert y to categorical
     y_categorical = to_categorical(y, num_classes=len(y.unique()))
