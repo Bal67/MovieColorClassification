@@ -2,14 +2,28 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import pickle
 from PIL import Image
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
+from keras.models import load_model
 
 TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
+BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
+CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
+N_COLORS = 5
+
+# Load models
+def load_basic_model():
+    with open(BASIC_MODEL_FILE, 'rb') as f:
+        model = pickle.load(f)
+    return model
+
+def load_cnn_model():
+    return load_model(CNN_MODEL_FILE)
 
 # Extract primary colors
 def get_primary_colors(image, n_colors=5):
@@ -54,6 +68,9 @@ def generate_graphs(data):
     plt.suptitle("Sample Images with Primary Colors")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_colors.png")
     plt.close()
+
+    basic_model = load_basic_model()
+    cnn_model = load_cnn_model()
 
     # Distribution of primary colors
     color_columns = [col for col in data.columns if col.startswith('color_')]
