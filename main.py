@@ -66,25 +66,38 @@ def prepare_data():
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test, y_encoded, data
 
+# Load genre data from the MovieGenre.csv file
+def load_genre_data():
+    genre_file = "/content/drive/My Drive/MovieGenre/archive/MovieGenre.csv"
+    genre_data = pd.read_csv(genre_file)
+    return genre_data
+
+features_data = DATA_FILE.copy()
+
+# Merge genre data with features data
+def merge_data(genre_data, features_data):
+    merged_data_genre = pd.merge(features_data, genre_data, left_on='image', right_on='Image')
+    return merged_data_genre
+
 # Generate genre color distribution graph
 def genre_color_distribution(data):
-    genres = data['label'].unique()
+    genres = data['Genre'].unique()
     color_columns = [col for col in data.columns if col.startswith('color_')]
     colors = data[color_columns]
     
     plt.figure(figsize=(12, 8))
     for genre in genres:
-        genre_data = colors[data['label'] == genre]
+        genre_data = colors[data['Genre'] == genre]
         genre_colors = genre_data.values.reshape(-1, 3)
         
         for i in range(3):
             plt.hist(genre_colors[:, i], bins=256, alpha=0.5, label=f'{genre} - {"RGB"[i]}')
     
     plt.legend(loc='upper right')
-    plt.title("Primary Colors Distribution by Genre")
-    plt.xlabel("Color Value")
+    plt.xlabel("Color value")
     plt.ylabel("Frequency")
-    st.pyplot(plt)
+    plt.title("Genre-wise Distribution of Primary Colors")
+    plt.show()
 
 # Main function to run the Streamlit app
 def main():
