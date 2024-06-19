@@ -11,7 +11,7 @@ FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 PREDICTIONS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/cnn_model_predictions.json"
 
-def train_cnn():
+def train_cnn(*args, **kwargs):
     # Load data
     data = pd.read_csv(FEATURES_FILE)
 

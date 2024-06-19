@@ -11,7 +11,7 @@ FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
 PREDICTIONS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/basic_model_predictions.json"
 
-def train_basic_model():
+def train_basic_model(*args, **kwargs):
     # Load data
     data = pd.read_csv(FEATURES_FILE)
 
