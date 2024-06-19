@@ -139,6 +139,25 @@ def main():
         st.write(f"Basic Model Accuracy: {basic_model.score(X_test, np.argmax(y_test, axis=1))}")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy")
 
+        # Display predictions from both models
+        image_features = primary_colors.flatten().reshape(1, -1)
+        basic_model_pred = basic_model.predict_proba(image_features)
+        
+
+        # Format predictions as percentages
+        basic_model_pred_percent = [f"{p * 100:.2f}%" for p in basic_model_pred[0]]
+        
+
+        # Display results in a table
+        results_df = pd.DataFrame({
+            "Model": ["Basic Model"],
+            "Red": [basic_model_pred_percent[0]],
+            "Green": [basic_model_pred_percent[1]],
+            "Blue": [basic_model_pred_percent[2]],
+            "Yellow": [basic_model_pred_percent[3]],
+        })
+        st.table(results_df)
+
     # CNN Model tab
     elif active_tab == "CNN Model":
         st.header("CNN Model")
