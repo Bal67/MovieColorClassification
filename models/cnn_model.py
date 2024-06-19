@@ -22,3 +22,4 @@ def train_cnn(images, labels):
     
     loss, accuracy = model.evaluate(X_test, y_test)
     print(f"CNN Model Accuracy: {accuracy}")
+    model.save("models/cnn_model.h5")

@@ -9,7 +9,7 @@ def prepare_data():
     posters_path = os.path.join(data_path, "SampleMoviePosters")
     
     # Load CSV
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, encoding='latin1')
     
     images = []
     labels = []
