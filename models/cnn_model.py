@@ -20,12 +20,16 @@ def train_cnn(*args, **kwargs):
     if len(y.unique()) < 2:
         raise ValueError("The data contains only one class. Ensure there are at least two classes.")
 
+    # Encode labels as integers
+    label_mapping = {label: idx for idx, label in enumerate(y.unique())}
+    y_encoded = y.map(label_mapping)
+
     # Convert X to 4D tensor
     num_samples = X.shape[0]
     X_reshaped = X.values.reshape(num_samples, 5, 3, 1) / 255.0  # Adjust the reshape dimensions based on your feature size
 
     # Convert y to categorical
-    y_categorical = to_categorical(y, num_classes=len(y.unique()))
+    y_categorical = to_categorical(y_encoded, num_classes=len(y.unique()))
 
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(X_reshaped, y_categorical, test_size=0.2, random_state=42)
