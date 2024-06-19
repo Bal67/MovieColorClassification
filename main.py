@@ -1,13 +1,12 @@
-import streamlit as st
 import json
-from PIL import Image
+import streamlit as st
 import os
-from models.basic_model import train_basic_model, evaluate_basic_model
-from models.cnn_model import train_cnn, evaluate_cnn
+from models.basic_model import train_basic_model
+from models.cnn_model import train_cnn
 
 # Constants
-BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
-CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
+BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/basic_model_predictions.json"
+CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/cnn_model_predictions.json"
 IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 
 # Load the primary colors data
@@ -27,18 +26,20 @@ def display_primary_colors(image_file, primary_colors):
 def main():
     st.title("Movie Poster Primary Colors")
 
+    # Train and evaluate models
+    st.write("Training Basic Model...")
+    basic_model_result = train_basic_model()
+
+    st.write("Training CNN Model...")
+    cnn_model_result = train_cnn()
+
+    # Choose model to display results
     model_choice = st.selectbox("Choose Model", ["Basic Model", "CNN Model"])
 
     if model_choice == "Basic Model":
         results_file = BASIC_MODEL_RESULTS_FILE
-        if st.button("Train Basic Model"):
-            train_basic_model()
-            evaluate_basic_model()
     else:
         results_file = CNN_MODEL_RESULTS_FILE
-        if st.button("Train CNN Model"):
-            train_cnn()
-            evaluate_cnn()
 
     # Load the dataset
     primary_colors_data = load_primary_colors(results_file)

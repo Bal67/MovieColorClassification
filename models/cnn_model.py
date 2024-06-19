@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 import json
 
 # Constants
-FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
+FEATURES_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/features.csv"
 CNN_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model.h5"
 CNN_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/cnn_model_predictions.json"
 NUM_CLASSES = 10  # Adjust according to your number of classes
@@ -21,6 +21,12 @@ def train_cnn(*args):
 
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Check if the data can be reshaped into (100, 100, 3)
+    num_samples = X_train.shape[0]
+    num_features = X_train.shape[1]
+    if num_features != 300:
+        raise ValueError(f"Expected 300 features (for 100x100x3 images), but got {num_features}")
 
     # Reshape and normalize the data
     X_train = X_train.values.reshape(-1, 100, 100, 3) / 255.0
@@ -59,6 +65,11 @@ def evaluate_cnn(*args):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Reshape and normalize the data
+    num_samples = X_train.shape[0]
+    num_features = X_train.shape[1]
+    if num_features != 300:
+        raise ValueError(f"Expected 300 features (for 100x100x3 images), but got {num_features}")
+
     X_train = X_train.values.reshape(-1, 100, 100, 3) / 255.0
     X_test = X_test.values.reshape(-1, 100, 100, 3) / 255.0
     y_train = to_categorical(y_train, NUM_CLASSES)
