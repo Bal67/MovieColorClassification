@@ -1,21 +1,20 @@
 import os
-from scripts.make_dataset import prepare_data
-from scripts.build_features import extract_features
-from models.basic_model import train_basic_model
-from models.cnn_model import train_cnn
+
+# Constants
+DATA_DIR = "../data"
+PROCESSED_DIR = "../data/processed"
+MODELS_DIR = "../models"
+
+# Create necessary directories
+def create_directories():
+    os.makedirs(DATA_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    print("Directories created.")
+
+# Main function
+def main():
+    create_directories()
 
 if __name__ == "__main__":
-    os.makedirs("data/processed", exist_ok=True)
-
-    images, labels = prepare_data(missing_value_strategy="default", default_genre="Uncategorized")
-    if len(images) == 0 or len(labels) == 0:
-        print("No valid data prepared. Exiting.")
-        exit()
-
-    features = extract_features(images)
-    if len(features) == 0:
-        print("No valid features extracted. Exiting.")
-        exit()
-    
-    train_basic_model(features, labels)
-    train_cnn(images, labels)
+    main()
