@@ -12,8 +12,8 @@ IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 TRAIN_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/train_primary_colors.json"
 TEST_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/test_primary_colors.json"
 NUM_CLUSTERS = 5
-TRAIN_SIZE = 500
-TEST_SIZE = 50
+TRAIN_SIZE = 250
+TEST_SIZE = 25
 
 # Function to extract primary colors from an image
 def get_primary_colors(image_path, num_clusters=NUM_CLUSTERS):
