@@ -8,8 +8,8 @@ from keras.utils import to_categorical
 import numpy as np
 
 # Constants
-BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model.pkl"
-CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model.h5"
+BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
+CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 
 # Load models
