@@ -9,7 +9,10 @@ from models.cnn_model import train_cnn
 def download_data():
     url = "https://www.kaggle.com/neha1703/movie-genre-from-its-poster/download"
     data_path = os.path.join("data", "raw")
-    os.makedirs(data_path, exist_ok=True)
+    
+    # Ensure the directory does not already exist to avoid errors
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
     
     zip_path = os.path.join(data_path, "movie_poster_dataset.zip")
     
