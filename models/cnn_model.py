@@ -1,10 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import pandas as pd
 from sklearn.model_selection import train_test_split
+import pandas as pd
 import numpy as np
 
 # Constants
@@ -25,47 +24,27 @@ def train_cnn(*args, **kwargs):
     label_mapping = {label: idx for idx, label in enumerate(y.unique())}
     y_encoded = y.map(label_mapping)
 
-    # Convert X to 4D tensor
-    num_samples = X.shape[0]
-    X_reshaped = X.values.reshape(num_samples, 5, 3, 1) / 255.0  # Adjust the reshape dimensions based on your feature size
-
     # Convert y to categorical
     y_categorical = to_categorical(y_encoded, num_classes=len(y.unique()))
 
     # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X_reshaped, y_categorical, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
 
-    # Data Augmentation
-    datagen = ImageDataGenerator(
-        rotation_range=20,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        horizontal_flip=True
-    )
-    datagen.fit(X_train)
-
-    # Build CNN model
+    # Build neural network model
     model = Sequential([
-        Conv2D(32, (3, 3), activation='relu', input_shape=(5, 3, 1)),
+        Dense(128, activation='relu', input_shape=(X.shape[1],)),
         BatchNormalization(),
-        MaxPooling2D((2, 2)),
-        Dropout(0.25),
-        
-        Conv2D(64, (3, 3), activation='relu'),
+        Dropout(0.5),
+        Dense(64, activation='relu'),
         BatchNormalization(),
-        MaxPooling2D((2, 2)),
-        Dropout(0.25),
-
-        Flatten(),
-        Dense(128, activation='relu'),
         Dropout(0.5),
         Dense(len(y.unique()), activation='softmax')
     ])
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    # Train model with data augmentation
-    model.fit(datagen.flow(X_train, y_train, batch_size=32), epochs=50, validation_data=(X_test, y_test))
+    # Train model
+    model.fit(X_train, y_train, epochs=50, validation_data=(X_test, y_test), batch_size=32)
 
     # Evaluate model
     loss, accuracy = model.evaluate(X_test, y_test)
