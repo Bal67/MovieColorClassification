@@ -79,7 +79,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     plt.close()
     
     # Basic Model graph
-    basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
+    basic_model_accuracy = basic_model.score(X_test, y_test)
     plt.figure()
     plt.title("Basic Model Accuracy")
     plt.bar(["Accuracy"], [basic_model_accuracy])
@@ -89,7 +89,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     plt.close()
 
     # CNN Model graph
-    cnn_model_accuracy = cnn_model.evaluate(X_test, y_test, verbose=0)[1]
+    cnn_model_accuracy = cnn_model.evaluate(X_test, y_test)[1]
     plt.figure()
     plt.title("CNN Model Accuracy")
     plt.bar(["Accuracy"], [cnn_model_accuracy])
