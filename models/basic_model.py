@@ -6,7 +6,7 @@ import joblib
 import json
 
 # Constants
-FEATURES_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/features.csv"
+FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 BASIC_MODEL_PATH = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model.pkl"
 BASIC_MODEL_RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/basic_model_predictions.json"
 
