@@ -2,8 +2,8 @@ import json
 import pandas as pd
 
 # Constants
-DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/primary_colors.json"
-FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
+DATA_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/primary_colors.json"
+FEATURES_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/features.csv"
 
 # Load data
 def load_data(data_file):
@@ -14,7 +14,7 @@ def load_data(data_file):
 # Process data to build features
 def build_features(data):
     rows = []
-    for item in data['train']:
+    for item in data:
         row = {"image": item["image"]}
         for i, color in enumerate(item["primary_colors"]):
             row[f"color_{i}_r"] = color[0]
