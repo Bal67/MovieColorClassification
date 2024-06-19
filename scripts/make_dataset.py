@@ -7,8 +7,8 @@ from collections import Counter
 import json
 
 # Constants
-IMAGE_FOLDER = "../archive/SampleMoviePosters"
-RESULTS_FILE = "../data/processed/primary_colors.json"
+IMAGE_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
+RESULTS_FILE = "/content/drive/My Drive/MovieGenre/MovieGenreClassification/data/processed/primary_colors.json"
 NUM_CLUSTERS = 5
 
 # Function to extract primary colors from an image
@@ -18,7 +18,7 @@ def get_primary_colors(image_path, num_clusters=NUM_CLUSTERS):
     image_array = np.array(image)
     image_array = image_array.reshape((-1, 3))
     
-    kmeans = KMeans(n_clusters=num_clusters)
+    kmeans = KMeans(n_clusters=num_clusters, n_init=10)
     kmeans.fit(image_array)
     
     colors = kmeans.cluster_centers_
