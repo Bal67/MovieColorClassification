@@ -19,6 +19,7 @@ CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
 TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 PRIMARY_COLORS_FILE = "/content/drive/My Drive/MovieGenre/data/processed/primary_colors.json"
+GENRE_FILE = "/content/drive/My Drive/MovieGenre/archive/MovieGenre.csv"
 N_COLORS = 5
 
 # Load models
