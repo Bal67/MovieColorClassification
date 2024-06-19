@@ -1,22 +1,21 @@
-import os
-import pandas as pd
 import numpy as np
-from tqdm import tqdm
+import pandas as pd
+import os
 import requests
-from PIL import Image
-from urllib.request import urlretrieve
+from tqdm import tqdm
 from bs4 import BeautifulSoup
+from urllib.request import urlretrieve
+from PIL import Image
+import ast
 
 # Constants
 DATA_PATH = "/content/drive/MyDrive/MovieGenre/archive"
 CSV_PATH = os.path.join(DATA_PATH, "MovieGenre.csv")
-TRAIN_POSTERS_PATH = os.path.join(DATA_PATH, "TrainPosters")
-TEST_POSTERS_PATH = os.path.join(DATA_PATH, "SampleMoviePosters")
+SAVE_LOCATION = os.path.join(DATA_PATH, "imdb_posters")
 SAMPLE_SIZE = 500
 
-# Ensure directories exist
-os.makedirs(TRAIN_POSTERS_PATH, exist_ok=True)
-os.makedirs(TEST_POSTERS_PATH, exist_ok=True)
+# Ensure save directory exists
+os.makedirs(SAVE_LOCATION, exist_ok=True)
 
 def download_image(url, save_path):
     try:
@@ -30,91 +29,69 @@ def download_image(url, save_path):
             os.remove(save_path)  # Remove corrupted image file
         return False
 
-def get_poster_url(imdb_link):
-    try:
-        response = requests.get(imdb_link)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        poster_div = soup.find('div', class_='poster')
-        if poster_div:
-            poster_url = poster_div.find('img')['src']
-            return poster_url
-        else:
-            print(f"No poster found for {imdb_link}")
-            return None
-    except Exception as e:
-        print(f"Error scraping {imdb_link}: {e}")
-        return None
+# Step 1: Web Scraping to get poster URLs
+movie = pd.read_csv(CSV_PATH, encoding='latin1')
+movie = movie.sample(n=SAMPLE_SIZE, random_state=42)
+print(f"CSV loaded successfully. Number of rows: {len(movie)}")
 
-def prepare_data():
-    # Load CSV
-    try:
-        df = pd.read_csv(CSV_PATH, encoding='latin1')
-    except Exception as e:
-        print(f"Error reading CSV file: {e}")
-        return np.array([]), np.array([]), np.array([]), np.array([])
+movie['imdb_link'] = movie['Imdb Link']
+imdbURLS = movie['imdb_link'].tolist()
+imdbIDS = movie['imdbId'].tolist()
+records = []
 
-    # Sample the data
-    df = df.sample(n=SAMPLE_SIZE, random_state=42)
-    print(f"CSV loaded successfully. Number of rows: {len(df)}")
-
-    train_images, train_labels, test_images, test_labels = [], [], [], []
-    download_success, download_failure = 0, 0
-    process_success, process_failure = 0, 0
-
-    for index, row in tqdm(df.iterrows(), total=df.shape[0]):
-        imdb_id = row['imdbId']
-        imdb_link = row['Imdb Link']
-        genre = row['Genre']
-        poster_filename = f"{imdb_id}.jpg"
-        train_poster_path = os.path.join(TRAIN_POSTERS_PATH, poster_filename)
-
-        poster_url = get_poster_url(imdb_link)
-        if poster_url:
-            # Download and process training images
-            if download_image(poster_url, train_poster_path):
-                download_success += 1
-                try:
-                    image = Image.open(train_poster_path).convert('RGB').resize((128, 128))
-                    train_images.append(np.array(image))
-                    train_labels.append(genre)
-                    process_success += 1
-                except Exception as e:
-                    print(f"Error processing downloaded image {train_poster_path}: {e}")
-                    process_failure += 1
-            else:
-                download_failure += 1
-        else:
-            download_failure += 1
-
-        # Process test images if available
-        test_poster_path = os.path.join(TEST_POSTERS_PATH, poster_filename)
-        if os.path.exists(test_poster_path):
-            try:
-                image = Image.open(test_poster_path).convert('RGB').resize((128, 128))
-                test_images.append(np.array(image))
-                test_labels.append(genre)
-                process_success += 1
-            except Exception as e:
-                print(f"Error processing test image {test_poster_path}: {e}")
-                process_failure += 1
-
-    train_images = np.array(train_images)
-    train_labels = np.array(train_labels)
-    test_images = np.array(test_images)
-    test_labels = np.array(test_labels)
-
-    print(f"Successfully downloaded {download_success} images, failed to download {download_failure} images.")
-    print(f"Successfully processed {process_success} images, failed to process {process_failure} images.")
-
-    return train_images, train_labels, test_images, test_labels
-
-if __name__ == "__main__":
-    train_images, train_labels, test_images, test_labels = prepare_data()
-    if len(train_images) > 0 and len(train_labels) > 0 and len(test_images) > 0 and len(test_labels) > 0:
-        os.makedirs("data/processed", exist_ok=True)
-        np.save("data/processed/train_images.npy", train_images)
-        np.save("data/processed/train_labels.npy", train_labels)
-        np.save("data/processed/test_images.npy", test_images)
-        np.save("data/processed/test_labels.npy", test_labels)
+for x in tqdm(imdbURLS):
+    imdbID = imdbIDS[imdbURLS.index(x)]
+    r = requests.get(x)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    results = soup.find_all('div', attrs={'class':'poster'})
+    if results:
+        first_result = results[0]
+        postername = first_result.find('img')['alt']
+        imgurl = first_result.find('img')['src']
+        records.append((x, postername, imgurl))
     else:
-        print("Insufficient data prepared. Exiting.")
+        movie = movie[movie.imdbId != imdbID]
+
+poster_df = pd.DataFrame(records, columns=['imdb_link', 'postername', 'poster_link'])
+df_movietotal = pd.merge(movie, poster_df, on='imdb_link')
+df_movietotal.to_csv('movie_metadataWithPoster.csv', sep='\t')
+
+# Step 2: Posters Download
+df_movietotal = pd.read_csv("movie_metadataWithPoster.csv", sep='\t')
+genres = []
+for entry in df_movietotal["Genre"]:
+    genres.append(entry)
+df_movietotal["genres"] = genres
+df_movietotal['genres'].replace('', np.nan, inplace=True)
+df_movietotal.dropna(inplace=True)
+
+df_poster = df_movietotal[['imdbId', 'poster_link']]
+not_found = []
+
+for index, row in tqdm(df_poster.iterrows(), total=df_poster.shape[0]):
+    url = row['poster_link']
+    if "https://m.media-amazon.com/" in str(url):
+        id = row['imdbId']
+        jpgname = os.path.join(SAVE_LOCATION, f'{id}.jpg')
+        if not download_image(url, jpgname):
+            not_found.append(index)
+    else:
+        not_found.append(index)
+
+# Check for corrupt images and remove them
+for filename in os.listdir(SAVE_LOCATION):
+    if filename.endswith('.jpg'):
+        try:
+            img = Image.open(os.path.join(SAVE_LOCATION, filename))
+            img.verify()
+        except (IOError, SyntaxError) as e:
+            print('Bad file:', filename)
+            os.remove(os.path.join(SAVE_LOCATION, filename))
+
+# Remove entries with missing or corrupt images from the DataFrame
+df_movietotal.drop(df_movietotal.index[not_found], inplace=True)
+columns_to_drop = [col for col in df_movietotal.columns if "Unnamed" in col]
+df_movietotal.drop(columns_to_drop, axis=1, inplace=True)
+df_movietotal.to_csv('movie_metadataWithPoster.csv', sep='\t')
+
+print(f"Successfully downloaded {len(df_movietotal) - len(not_found)} images, failed to download {len(not_found)} images.")
