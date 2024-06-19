@@ -2,18 +2,6 @@ import os
 import pandas as pd
 from PIL import Image
 import numpy as np
-import gdown
-
-def download_image(file_id, save_path):
-    url = f"https://drive.google.com/drive/folders/1WfK0iYuQ_6v_VWca_dLkcayYYgErx2DJ?usp=sharing"
-    try:
-        gdown.download(url, save_path, quiet=False)
-        img = Image.open(save_path).convert('RGB')
-        img.save(save_path)
-        return True
-    except Exception as e:
-        print(f"Error downloading {url}: {e}")
-        return False
 
 def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     data_path = "/content/drive/MyDrive/MovieGenre/archive"
@@ -49,14 +37,8 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     for index, row in df.iterrows():
         poster = row['Poster']
         if isinstance(poster, str) and poster:
-            file_id = poster.split('/')[-2]  # Extract file ID from URL
             poster_filename = os.path.basename(poster)
             poster_path = os.path.join(posters_path, poster_filename)
-
-            if not os.path.exists(poster_path):
-                if not download_image(file_id, poster_path):
-                    invalid_entries += 1
-                    continue
 
             if os.path.exists(poster_path):
                 try:
@@ -88,7 +70,6 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     labels = np.array(labels)
 
     print(f"Found {valid_entries} valid entries.")
-    print(f"Skipped {invalid_entries} invalid entries due to 404 errors.")
     if num_missing > 0:
         print(f"Handled {num_missing} entries due to missing images.")
 
