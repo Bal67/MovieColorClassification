@@ -8,7 +8,27 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     csv_path = os.path.join(data_path, "MovieGenre.csv")
     posters_path = os.path.join(data_path, "SampleMoviePosters")
 
-    df = pd.read_csv(csv_path, encoding='latin1')
+    print(f"CSV Path: {csv_path}")
+    print(f"Posters Path: {posters_path}")
+
+    # Check if CSV file exists
+    if not os.path.exists(csv_path):
+        print(f"CSV file not found at {csv_path}")
+        return np.array([]), np.array([])
+
+    # Check if posters directory exists
+    if not os.path.exists(posters_path):
+        print(f"Posters directory not found at {posters_path}")
+        return np.array([]), np.array([])
+
+    # Load CSV
+    try:
+        df = pd.read_csv(csv_path, encoding='latin1')
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")
+        return np.array([]), np.array([])
+
+    print(f"CSV loaded successfully. Number of rows: {len(df)}")
 
     images = []
     labels = []
@@ -29,6 +49,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
                     print(f"Error processing image {poster_path}: {e}")
                     num_missing += 1
             else:
+                print(f"Poster not found at {poster_path}")
                 if missing_value_strategy == "remove":
                     num_missing += 1
                 elif missing_value_strategy == "default":
@@ -36,6 +57,7 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
                     labels.append(default_genre)
                     valid_entries += 1
         else:
+            print(f"Invalid poster entry at row {index}")
             if missing_value_strategy == "remove":
                 num_missing += 1
             elif missing_value_strategy == "default":
@@ -54,6 +76,9 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
 
 if __name__ == "__main__":
     images, labels = prepare_data(missing_value_strategy="default", default_genre="Uncategorized")
-    os.makedirs("data/processed", exist_ok=True)
-    np.save("data/processed/images.npy", images)
-    np.save("data/processed/labels.npy", labels)
+    if len(images) > 0 and len(labels) > 0:
+        os.makedirs("data/processed", exist_ok=True)
+        np.save("data/processed/images.npy", images)
+        np.save("data/processed/labels.npy", labels)
+    else:
+        print("No valid data prepared. Exiting.")
