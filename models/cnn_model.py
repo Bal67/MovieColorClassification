@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import numpy as np
@@ -34,9 +35,18 @@ def train_cnn(*args, **kwargs):
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(X_reshaped, y_categorical, test_size=0.2, random_state=42)
 
+    # Data Augmentation
+    datagen = ImageDataGenerator(
+        rotation_range=20,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        horizontal_flip=True
+    )
+    datagen.fit(X_train)
+
     # Build CNN model
     model = Sequential([
-        Conv2D(32, (2, 2), activation='relu', input_shape=(5, 3, 1)),  # Adjusted kernel size to fit the input dimensions
+        Conv2D(32, (2, 2), activation='relu', input_shape=(5, 3, 1)),
         MaxPooling2D((2, 2)),
         Flatten(),
         Dense(128, activation='relu'),
@@ -46,8 +56,8 @@ def train_cnn(*args, **kwargs):
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    # Train model
-    model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
+    # Train model with data augmentation
+    model.fit(datagen.flow(X_train, y_train, batch_size=32), epochs=50, validation_data=(X_test, y_test))
 
     # Evaluate model
     loss, accuracy = model.evaluate(X_test, y_test)

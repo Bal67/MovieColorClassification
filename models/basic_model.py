@@ -1,8 +1,9 @@
-import pickle
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
+import pickle
 
 # Constants
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
@@ -18,11 +19,15 @@ def train_basic_model(*args, **kwargs):
     if len(y.unique()) < 2:
         raise ValueError("The data contains only one class. Ensure there are at least two classes.")
 
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Normalize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
 
-    # Train model
-    model = LogisticRegression(max_iter=1000)
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+    # Train Logistic Regression model
+    model = LogisticRegression(max_iter=500)
     model.fit(X_train, y_train)
 
     # Evaluate model
