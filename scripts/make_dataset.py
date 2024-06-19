@@ -2,6 +2,17 @@ import os
 import pandas as pd
 from PIL import Image
 import numpy as np
+import requests
+from io import BytesIO
+
+def download_image(url, save_path):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content)).convert('RGB')
+        img.save(save_path)
+    except Exception as e:
+        print(f"Error downloading {url}: {e}")
 
 def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     data_path = "/content/drive/MyDrive/MovieGenre/archive"
@@ -11,14 +22,12 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     print(f"CSV Path: {csv_path}")
     print(f"Posters Path: {posters_path}")
 
+    if not os.path.exists(posters_path):
+        os.makedirs(posters_path)
+
     # Check if CSV file exists
     if not os.path.exists(csv_path):
         print(f"CSV file not found at {csv_path}")
-        return np.array([]), np.array([])
-
-    # Check if posters directory exists
-    if not os.path.exists(posters_path):
-        print(f"Posters directory not found at {posters_path}")
         return np.array([]), np.array([])
 
     # Load CSV
@@ -38,7 +47,11 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
     for index, row in df.iterrows():
         poster = row['Poster']
         if isinstance(poster, str) and poster:
-            poster_path = os.path.join(posters_path, poster)
+            poster_filename = os.path.basename(poster)
+            poster_path = os.path.join(posters_path, poster_filename)
+            if not os.path.exists(poster_path):
+                download_image(poster, poster_path)
+
             if os.path.exists(poster_path):
                 try:
                     image = Image.open(poster_path).convert('RGB').resize((128, 128))
