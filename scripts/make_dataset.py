@@ -1,33 +1,30 @@
 import os
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 import requests
 from bs4 import BeautifulSoup
-from tqdm import tqdm
 from urllib.request import urlretrieve
+import ast
 from PIL import Image
 
 # Constants
 CSV_PATH = "/content/drive/MyDrive/MovieGenre/archive/MovieGenre.csv"
 SAVE_LOCATION = "/content/drive/MyDrive/MovieGenre/archive/TrainPosters"
 PROCESSED_DATA_DIR = "data/processed"
-SAMPLED_DATA_PATH = "sampled_movie_data.csv"
-FINAL_DATA_PATH = "final_movie_data_with_posters.csv"
-NUM_SAMPLES = 500  # Number of samples to process
+FINAL_DATA_PATH = "movie_metadataWithPoster.csv"
 IMAGE_SIZE = (128, 128)
 
 # Create directories if not exist
 os.makedirs(SAVE_LOCATION, exist_ok=True)
 os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
 
-# Step 1: Limit the Dataset
-def limit_dataset(csv_path, num_samples):
+# Step 1: Load Dataset
+def load_dataset(csv_path):
     movie = pd.read_csv(csv_path, encoding='latin1')
-    movie_sampled = movie.sample(n=num_samples, random_state=42)
-    movie_sampled.to_csv(SAMPLED_DATA_PATH, index=False)
-    return movie_sampled
+    return movie
 
-# Step 2: Scrape IMDb Pages
+# Step 2: Scrape IMDb Pages for Posters
 def fetch_poster_url(imdb_url):
     try:
         r = requests.get(imdb_url)
@@ -46,7 +43,7 @@ def fetch_poster_url(imdb_url):
 def scrape_imdb_links(movie_df):
     movie_df['poster_link'] = movie_df['Imdb Link'].apply(fetch_poster_url)
     movie_df.dropna(subset=['poster_link'], inplace=True)
-    movie_df.to_csv(SAMPLED_DATA_PATH, index=False)
+    movie_df.to_csv(FINAL_DATA_PATH, index=False)
     return movie_df
 
 # Step 3: Download Posters
@@ -86,12 +83,12 @@ def prepare_data(data_path, save_location):
     return np.array(images), np.array(labels)
 
 def main():
-    print("Limiting dataset...")
-    movie_sampled = limit_dataset(CSV_PATH, NUM_SAMPLES)
-    print(f"CSV loaded successfully. Number of rows: {len(movie_sampled)}")
+    print("Loading dataset...")
+    movie = load_dataset(CSV_PATH)
+    print(f"CSV loaded successfully. Number of rows: {len(movie)}")
 
     print("Scraping IMDb links for posters...")
-    movie_with_posters = scrape_imdb_links(movie_sampled)
+    movie_with_posters = scrape_imdb_links(movie)
 
     print("Downloading posters...")
     movie_final = download_posters(movie_with_posters)
