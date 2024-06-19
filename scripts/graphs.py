@@ -1,9 +1,15 @@
+import os
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
-from PIL import Image
 import numpy as np
+from PIL import Image
 from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from keras.utils import to_categorical
+
+TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
+DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 
 # Extract primary colors
 def get_primary_colors(image, n_colors=5):
@@ -14,7 +20,7 @@ def get_primary_colors(image, n_colors=5):
     colors = kmeans.cluster_centers_.astype(int)
     return colors
 
-# Prepare data function (from prepare_data.py or similar)
+# Load and prepare data
 def prepare_data():
     data = pd.read_csv(DATA_FILE)
     X = data.drop(columns=["image", "label"])
@@ -37,18 +43,16 @@ def generate_graphs(data):
         image_path = os.path.join(TRAINING_IMAGES_FOLDER, row['image'])
         image = Image.open(image_path)
         primary_colors = get_primary_colors(image)
-        
-        plt.subplot(2, 5, idx + 1)
+
+        plt.subplot(2, 5, idx  + 1)
         plt.imshow(image)
         plt.axis('off')
-        
-        plt.subplot(2, 5, idx + 6)
+        plt.subplot(2, 5, i + 6)
         for color in primary_colors:
-            plt.barh([0], [10], color=[color/255.0], edgecolor='none')
+            plt.barh([0], [10], color=[color / 255.0], edgecolor='none')
         plt.axis('off')
-    
     plt.suptitle("Sample Images with Primary Colors")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_primary_colors.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_colors.png")
     plt.close()
 
     # Distribution of primary colors
@@ -74,7 +78,7 @@ def generate_graphs(data):
     plt.xlabel("Label")
     plt.ylabel("Number of Images")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
-    plt.close()
+    plt.close()  
 
     # Basic Model graph
     basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
