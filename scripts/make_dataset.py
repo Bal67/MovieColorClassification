@@ -52,10 +52,8 @@ def prepare_data(missing_value_strategy="default", default_genre="Unknown"):
 
     return images, labels
 
-# Example usage with "default" strategy (to ensure we have data)
-images, labels = prepare_data(missing_value_strategy="default", default_genre="Uncategorized")
-
-# Save the processed data (assuming "data" directory exists)
-os.makedirs("data/processed", exist_ok=True)
-np.save("data/processed/images.npy", images)
-np.save("data/processed/labels.npy", labels)
+if __name__ == "__main__":
+    images, labels = prepare_data(missing_value_strategy="default", default_genre="Uncategorized")
+    os.makedirs("data/processed", exist_ok=True)
+    np.save("data/processed/images.npy", images)
+    np.save("data/processed/labels.npy", labels)

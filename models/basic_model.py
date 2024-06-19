@@ -6,6 +6,9 @@ import joblib
 import os
 
 def train_basic_model(features, labels):
+    if len(features) == 0 or len(labels) == 0:
+        raise ValueError("No valid data to train on.")
+    
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
     model = RandomForestClassifier()
     model.fit(X_train, y_train)
@@ -13,8 +16,10 @@ def train_basic_model(features, labels):
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Model Accuracy: {accuracy}")
     
-    # Ensure the directory exists
     os.makedirs("models", exist_ok=True)
-    
-    # Save the model
     joblib.dump(model, "models/basic_model.joblib")
+
+if __name__ == "__main__":
+    features = np.load("data/processed/features.npy")
+    labels = np.load("data/processed/labels.npy")
+    train_basic_model(features, labels)

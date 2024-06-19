@@ -6,6 +6,9 @@ from tensorflow.keras.utils import to_categorical
 import os
 
 def train_cnn(images, labels):
+    if len(images) == 0 or len(labels) == 0:
+        raise ValueError("No valid data to train on.")
+    
     X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
     y_train = to_categorical(y_train)
     y_test = to_categorical(y_test)
@@ -24,8 +27,10 @@ def train_cnn(images, labels):
     loss, accuracy = model.evaluate(X_test, y_test)
     print(f"CNN Model Accuracy: {accuracy}")
     
-    # Ensure the directory exists
     os.makedirs("models", exist_ok=True)
-    
-    # Save the model
     model.save("models/cnn_model.h5")
+
+if __name__ == "__main__":
+    images = np.load("data/processed/images.npy")
+    labels = np.load("data/processed/labels.npy")
+    train_cnn(images, labels)

@@ -12,16 +12,11 @@ def extract_features(images):
     
     features = np.array(features)
 
-    # Ensure the directory exists
     os.makedirs("data/processed", exist_ok=True)
-
-    # Save the features
     np.save("data/processed/features.npy", features)
 
     return features
 
-# Load images
-images = np.load("data/processed/images.npy")
-
-# Extract features
-features = extract_features(images)
+if __name__ == "__main__":
+    images = np.load("data/processed/images.npy")
+    extract_features(images)
