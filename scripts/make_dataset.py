@@ -1,104 +1,111 @@
+import os
 import numpy as np
 import pandas as pd
-import os
 import requests
-from tqdm import tqdm
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 from urllib.request import urlretrieve
 from PIL import Image
-import ast
 
 # Constants
-DATA_PATH = "/content/drive/MyDrive/MovieGenre/archive"
-CSV_PATH = os.path.join(DATA_PATH, "MovieGenre.csv")
-SAVE_LOCATION = os.path.join(DATA_PATH, "imdb_posters")
-SAMPLE_SIZE = 500
+CSV_PATH = "/content/drive/MyDrive/MovieGenre/archive/MovieGenre.csv"
+SAVE_LOCATION = "/content/drive/MyDrive/MovieGenre/archive/TrainPosters"
+PROCESSED_DATA_DIR = "data/processed"
+SAMPLED_DATA_PATH = "sampled_movie_data.csv"
+FINAL_DATA_PATH = "final_movie_data_with_posters.csv"
+NUM_SAMPLES = 500  # Number of samples to process
+IMAGE_SIZE = (128, 128)
 
-# Ensure save directory exists
+# Create directories if not exist
 os.makedirs(SAVE_LOCATION, exist_ok=True)
+os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
 
-def download_image(url, save_path):
+# Step 1: Limit the Dataset
+def limit_dataset(csv_path, num_samples):
+    movie = pd.read_csv(csv_path, encoding='latin1')
+    movie_sampled = movie.sample(n=num_samples, random_state=42)
+    movie_sampled.to_csv(SAMPLED_DATA_PATH, index=False)
+    return movie_sampled
+
+# Step 2: Scrape IMDb Pages
+def fetch_poster_url(imdb_url):
+    try:
+        r = requests.get(imdb_url)
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text, 'html.parser')
+            poster_tag = soup.find('div', class_='poster')
+            if poster_tag:
+                img_tag = poster_tag.find('img')
+                if img_tag and 'src' in img_tag.attrs:
+                    return img_tag['src']
+        print(f"Failed to retrieve poster from {imdb_url}, status code: {r.status_code}")
+    except Exception as e:
+        print(f"Exception for {imdb_url}: {e}")
+    return None
+
+def scrape_imdb_links(movie_df):
+    movie_df['poster_link'] = movie_df['Imdb Link'].apply(fetch_poster_url)
+    movie_df.dropna(subset=['poster_link'], inplace=True)
+    movie_df.to_csv(SAMPLED_DATA_PATH, index=False)
+    return movie_df
+
+# Step 3: Download Posters
+def download_poster(url, save_path):
     try:
         urlretrieve(url, save_path)
-        image = Image.open(save_path).convert('RGB')
-        image.save(save_path)
         return True
     except Exception as e:
         print(f"Error downloading {url}: {e}")
-        if os.path.exists(save_path):
-            os.remove(save_path)  # Remove corrupted image file
         return False
 
-# Step 1: Web Scraping to get poster URLs
-movie = pd.read_csv(CSV_PATH, encoding='latin1')
-movie = movie.sample(n=SAMPLE_SIZE, random_state=42)
-print(f"CSV loaded successfully. Number of rows: {len(movie)}")
+def download_posters(movie_df):
+    failed_downloads = []
+    for idx, row in tqdm(movie_df.iterrows(), total=movie_df.shape[0]):
+        imdb_id = row['imdbId']
+        poster_url = row['poster_link']
+        save_path = os.path.join(SAVE_LOCATION, f"{imdb_id}.jpg")
+        if not download_poster(poster_url, save_path):
+            failed_downloads.append(idx)
+    movie_df.drop(failed_downloads, inplace=True)
+    movie_df.to_csv(FINAL_DATA_PATH, index=False)
+    return movie_df
 
-movie['imdb_link'] = movie['Imdb Link']
-imdbURLS = movie['imdb_link'].tolist()
-imdbIDS = movie['imdbId'].tolist()
-records = []
-
-for x in tqdm(imdbURLS):
-    imdbID = imdbIDS[imdbURLS.index(x)]
-    try:
-        r = requests.get(x)
-        if r.status_code == 200:
-            soup = BeautifulSoup(r.text, 'html.parser')
-            results = soup.find_all('div', attrs={'class':'poster'})
-            if results:
-                first_result = results[0]
-                postername = first_result.find('img')['alt']
-                imgurl = first_result.find('img')['src']
-                records.append((x, postername, imgurl))
-            else:
-                print(f"No poster found for {imdbID}")
-                movie = movie[movie.imdbId != imdbID]
-        else:
-            print(f"Failed to retrieve {x}, status code: {r.status_code}")
-    except Exception as e:
-        print(f"Exception for {x}: {e}")
-
-poster_df = pd.DataFrame(records, columns=['imdb_link', 'postername', 'poster_link'])
-df_movietotal = pd.merge(movie, poster_df, on='imdb_link')
-df_movietotal.to_csv('movie_metadataWithPoster.csv', sep='\t')
-
-# Step 2: Posters Download
-df_movietotal = pd.read_csv("movie_metadataWithPoster.csv", sep='\t')
-genres = []
-for entry in df_movietotal["Genre"]:
-    genres.append(entry)
-df_movietotal["genres"] = genres
-df_movietotal['genres'].replace('', np.nan, inplace=True)
-df_movietotal.dropna(inplace=True)
-
-df_poster = df_movietotal[['imdbId', 'poster_link']]
-not_found = []
-
-for index, row in tqdm(df_poster.iterrows(), total=df_poster.shape[0]):
-    url = row['poster_link']
-    if "https://m.media-amazon.com/" in str(url):
-        id = row['imdbId']
-        jpgname = os.path.join(SAVE_LOCATION, f'{id}.jpg')
-        if not download_image(url, jpgname):
-            not_found.append(index)
-    else:
-        not_found.append(index)
-
-# Check for corrupt images and remove them
-for filename in os.listdir(SAVE_LOCATION):
-    if filename.endswith('.jpg'):
+# Step 4: Prepare Dataset
+def prepare_data(data_path, save_location):
+    data = pd.read_csv(data_path)
+    images = []
+    labels = []
+    for idx, row in data.iterrows():
         try:
-            img = Image.open(os.path.join(SAVE_LOCATION, filename))
-            img.verify()
-        except (IOError, SyntaxError) as e:
-            print('Bad file:', filename)
-            os.remove(os.path.join(SAVE_LOCATION, filename))
+            img_path = os.path.join(save_location, f"{row['imdbId']}.jpg")
+            image = Image.open(img_path).convert('RGB').resize(IMAGE_SIZE)
+            images.append(np.array(image))
+            labels.append(row['Genre'])
+        except Exception as e:
+            print(f"Error processing image {img_path}: {e}")
+    return np.array(images), np.array(labels)
 
-# Remove entries with missing or corrupt images from the DataFrame
-df_movietotal.drop(df_movietotal.index[not_found], inplace=True)
-columns_to_drop = [col for col in df_movietotal.columns if "Unnamed" in col]
-df_movietotal.drop(columns_to_drop, axis=1, inplace=True)
-df_movietotal.to_csv('movie_metadataWithPoster.csv', sep='\t')
+def main():
+    print("Limiting dataset...")
+    movie_sampled = limit_dataset(CSV_PATH, NUM_SAMPLES)
+    print(f"CSV loaded successfully. Number of rows: {len(movie_sampled)}")
 
-print(f"Successfully downloaded {len(df_movietotal) - len(not_found)} images, failed to download {len(not_found)} images.")
+    print("Scraping IMDb links for posters...")
+    movie_with_posters = scrape_imdb_links(movie_sampled)
+
+    print("Downloading posters...")
+    movie_final = download_posters(movie_with_posters)
+
+    print("Preparing dataset...")
+    images, labels = prepare_data(FINAL_DATA_PATH, SAVE_LOCATION)
+
+    if len(images) == 0:
+        print("No valid images to process. Exiting.")
+        return
+
+    print(f"Processed {len(images)} images and {len(labels)} labels.")
+    np.save(os.path.join(PROCESSED_DATA_DIR, "images.npy"), images)
+    np.save(os.path.join(PROCESSED_DATA_DIR, "labels.npy"), labels)
+
+if __name__ == "__main__":
+    main()
