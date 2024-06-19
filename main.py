@@ -49,9 +49,11 @@ def display_primary_colors(image_file, primary_colors):
         st.image(color_block, caption=f"RGB: {color}", use_column_width=False, width=100)
 
 # Get sample image from test set
-def get_sample_image(test_data):
-    sample_file = os.path.join(TRAINING_IMAGES_FOLDER, test_data.sample(1)['image'].values[0])
-    return sample_file
+def get_sample_image(data):
+    test_images = data.loc[data['split'] == 'test', 'image'].values
+    sample_image_path = np.random.choice(test_images)
+    sample_image = Image.open(os.path.join(TRAINING_IMAGES_FOLDER, sample_image_path)).convert("RGB")
+    return sample_image, sample_image_path
 
 # Load and prepare data
 def prepare_data():
@@ -134,8 +136,8 @@ def main():
     # Basic Model tab
     elif active_tab == "Basic Model":
         st.header("Basic Model")
-        sample_image = get_sample_image(data)
-        st.image(sample_image, caption="Sample Training Image", use_column_width=True)
+        sample_image, sample_image_path = get_sample_image(data)
+        st.image(sample_image, caption="Sample Test Image", use_column_width=True)
         st.write(f"Basic Model Accuracy: {basic_model.score(X_test, np.argmax(y_test, axis=1))}")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy")
 
@@ -144,10 +146,8 @@ def main():
         image_features = primary_colors.flatten().reshape(1, -1)
         basic_model_pred = basic_model.predict_proba(image_features)
         
-
         # Format predictions as percentages
         basic_model_pred_percent = [f"{p * 100:.2f}%" for p in basic_model_pred[0]]
-        
 
         # Display results in a table
         results_df = pd.DataFrame({
