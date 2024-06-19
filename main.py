@@ -11,7 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from scripts.graphs import generate_graphs
-import mathplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
@@ -150,7 +150,7 @@ def main():
     # Data Exploration tab
     elif active_tab == "Data Exploration":
         st.header("Data Exploration")
-        
+
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png", caption="Sample Images with Primary Colors")
         st.write("This graph shows a few sample images from the dataset along with their extracted primary colors.")
 
