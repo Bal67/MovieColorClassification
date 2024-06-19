@@ -20,7 +20,7 @@ def display_primary_colors(image_file, primary_colors):
     st.write("Primary Colors:")
     for color in primary_colors:
         st.write(f"RGB: {color}")
-        st.markdown(f"<div style='width: 50px; height: 50px; background-color: rgb{color};'></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='width: 50px; height: 50px; background-color: rgb{color});'></div>", unsafe_allow_html=True)
 
 # Main function to run the Streamlit app
 def main():

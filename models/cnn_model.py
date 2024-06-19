@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from tensorflow.keras.utils import to_categorical
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -36,10 +36,11 @@ def train_cnn(*args, **kwargs):
 
     # Build CNN model
     model = Sequential([
-        Conv2D(32, (3, 3), activation='relu', input_shape=(5, 3, 1)),  # Adjust input shape
+        Conv2D(32, (2, 2), activation='relu', input_shape=(5, 3, 1)),  # Adjusted kernel size to fit the input dimensions
         MaxPooling2D((2, 2)),
         Flatten(),
         Dense(128, activation='relu'),
+        Dropout(0.5),
         Dense(len(y.unique()), activation='softmax')
     ])
 
