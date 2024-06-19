@@ -10,7 +10,7 @@ from keras.models import load_model
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
-import graphs
+from scripts import graphs  # Update import statement
 
 # Constants
 BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
@@ -66,7 +66,7 @@ def main():
     X_train, X_test, y_train, y_test, y_encoded, data = graphs.prepare_data()
 
     # Generate graphs for data exploration
-    graphs.generate_graphs()
+    graphs.generate_graphs(data)
 
     # Home tab
     if active_tab == "Home":
@@ -80,4 +80,33 @@ def main():
                 display_primary_colors(uploaded_file, primary_colors)
 
                 # Display predictions from both models
-                image_features
+                image_features = primary_colors.flatten().reshape(1, -1)
+                basic_model_pred = basic_model.predict(image_features)
+                cnn_model_pred = cnn_model.predict(image_features)
+
+                # Display results in a table
+                results_df = pd.DataFrame({
+                    "Model": ["Basic Model", "CNN Model"],
+                    "Prediction": [basic_model_pred[0], cnn_model_pred[0]]
+                })
+                st.table(results_df)
+
+            except UnidentifiedImageError:
+                st.error("Cannot identify image file. Please upload a valid image.")
+
+    # Basic Model tab
+    elif active_tab == "Basic Model":
+        st.header("Basic Model")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png", caption="Basic Model Accuracy Graph", use_column_width=True)
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Label Distribution", use_column_width=True)
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Color Distribution", use_column_width=True)
+
+    # CNN Model tab
+    elif active_tab == "CNN Model":
+        st.header("CNN Model")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png", caption="CNN Model Accuracy Graph", use_column_width=True)
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Label Distribution", use_column_width=True)
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Color Distribution", use_column_width=True)
+
+if __name__ == "__main__":
+    main()

@@ -1,25 +1,15 @@
+import os
 import matplotlib.pyplot as plt
-import numpy as np
-from keras.models import load_model
 import pandas as pd
+import numpy as np
+from PIL import Image
+from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
-import pickle
 
-# Constants
-BASIC_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
-CNN_MODEL_FILE = "/content/drive/My Drive/MovieGenre/models/cnn_model.h5"
+TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
 DATA_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
-
-# Load models
-def load_basic_model():
-    with open(BASIC_MODEL_FILE, 'rb') as f:
-        model = pickle.load(f)
-    return model
-
-def load_cnn_model():
-    return load_model(CNN_MODEL_FILE)
 
 # Load and prepare data
 def prepare_data():
@@ -34,9 +24,17 @@ def prepare_data():
     X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test, y_encoded, data
 
-# Generate and save graphs
-def generate_graphs():
+# Extract primary colors
+def get_primary_colors(image, n_colors=5):
+    image_array = np.array(image)
+    pixels = image_array.reshape(-1, 3)
+    kmeans = KMeans(n_clusters=n_colors, n_init=10)
+    kmeans.fit(pixels)
+    colors = kmeans.cluster_centers_.astype(int)
+    return colors
 
+# Generate and save graphs
+def generate_graphs(data):
     plt.figure(figsize=(15, 10))
     for i, row in data.sample(5).iterrows():
         image_path = os.path.join(TRAINING_IMAGES_FOLDER, row['image'])
@@ -47,14 +45,11 @@ def generate_graphs():
         plt.axis('off')
         plt.subplot(2, 5, i + 6)
         for color in primary_colors:
-            plt.barh([0], [10], color=[color/255.0], edgecolor='none')
+            plt.barh([0], [10], color=[color / 255.0], edgecolor='none')
         plt.axis('off')
-        plt.suptitle("Sample Images with Primary Colors")
-    
-    # Load models and data
-    basic_model = load_basic_model()
-    cnn_model = load_cnn_model()
-    X_train, X_test, y_train, y_test, y_encoded, data = prepare_data()
+    plt.suptitle("Sample Images with Primary Colors")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_colors.png")
+    plt.close()
 
     # Distribution of primary colors
     color_columns = [col for col in data.columns if col.startswith('color_')]
@@ -79,8 +74,7 @@ def generate_graphs():
     plt.xlabel("Label")
     plt.ylabel("Number of Images")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
-    plt.close()
-    
+    plt.close()  
 
     # Basic Model graph
     basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
