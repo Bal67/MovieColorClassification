@@ -9,7 +9,7 @@ import joblib
 FEATURES_FILE = "/content/drive/My Drive/MovieGenre/data/processed/features.csv"
 MODEL_SAVE_PATH = "/content/drive/My Drive/MovieGenre/models/basic_model.pkl"
 
-def train_basic_model():
+def train_basic_model(*args):
     # Load data
     data = pd.read_csv(FEATURES_FILE)
 
