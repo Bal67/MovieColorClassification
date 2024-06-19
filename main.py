@@ -20,4 +20,3 @@ if uploaded_file is not None:
     
     st.write(f"Basic Model Prediction: {pred_basic}")
     st.write(f"CNN Model Prediction: {pred_cnn}")
-

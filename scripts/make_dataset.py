@@ -23,4 +23,3 @@ def prepare_data():
     np.save(os.path.join("data", "processed", "labels.npy"), labels)
     
     return images, labels
-

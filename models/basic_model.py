@@ -19,4 +19,3 @@ def load_basic_model():
 def predict_basic(model, image):
     feature = hog(rgb2gray(np.array(image.resize((128, 128)))), pixels_per_cell=(16, 16)).reshape(1, -1)
     return model.predict(feature)[0]
-

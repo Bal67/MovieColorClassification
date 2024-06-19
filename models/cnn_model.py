@@ -54,4 +54,3 @@ def predict_cnn(model, image):
     output = model(image)
     _, pred = torch.max(output, 1)
     return pred.item()
-
