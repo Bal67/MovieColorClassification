@@ -7,7 +7,7 @@ st.title('Movie Genre Classification')
 st.write('This is a simple Streamlit app to classify movie genres based on posters.')
 
 # Load the trained model
-model = np.load("models/basic_model.npy", allow_pickle=True).item()
+model = np.load("models/basic_model.py", allow_pickle=True).item()
 
 # Load the test images
 images = np.load("data/processed/images.npy")
