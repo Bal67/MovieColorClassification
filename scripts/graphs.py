@@ -25,39 +25,33 @@ def load_basic_model():
 def load_cnn_model():
     return load_model(CNN_MODEL_FILE)
 
-# Extract primary colors
-def get_primary_colors(image, n_colors=5):
-    image_array = np.array(image)
-    pixels = image_array.reshape(-1, 3)
-    kmeans = KMeans(n_clusters=n_colors, n_init=10)
-    kmeans.fit(pixels)
-    colors = kmeans.cluster_centers_.astype(int)
-    return colors
+def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
+    TRAINING_IMAGES_FOLDER = "/content/drive/My Drive/MovieGenre/archive/SampleMoviePosters"
+    N_COLORS = 5
 
-# Generate and save graphs
-def generate_graphs(data, X_test, y_test):
+    def get_primary_colors(image, n_colors=N_COLORS):
+        image_array = np.array(image)
+        pixels = image_array.reshape(-1, 3)
+        kmeans = KMeans(n_clusters=n_colors, n_init=10)
+        kmeans.fit(pixels)
+        colors = kmeans.cluster_centers_.astype(int)
+        return colors
+
     plt.figure(figsize=(15, 10))
-    
-    # Sample images with primary colors
-    sample_rows = data.sample(5)
-    for idx, (i, row) in enumerate(sample_rows.iterrows()):
-        image_path = os.path.join(TRAINING_IMAGES_FOLDER, row['image'])
+    for i, row in enumerate(data.sample(5).iterrows(), 1):
+        image_path = os.path.join(TRAINING_IMAGES_FOLDER, row[1]['image'])
         image = Image.open(image_path)
         primary_colors = get_primary_colors(image)
-
-        plt.subplot(2, 5, idx  + 1)
+        plt.subplot(2, 5, i)
         plt.imshow(image)
         plt.axis('off')
-        plt.subplot(2, 5, idx + 6)
+        plt.subplot(2, 5, i + 5)
         for color in primary_colors:
-            plt.barh([0], [10], color=[color / 255.0], edgecolor='none')
+            plt.barh([0], [10], color=[color/255.0], edgecolor='none')
         plt.axis('off')
     plt.suptitle("Sample Images with Primary Colors")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_colors.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png")
     plt.close()
-
-    basic_model = load_basic_model()
-    cnn_model = load_cnn_model()
 
     # Distribution of primary colors
     color_columns = [col for col in data.columns if col.startswith('color_')]
@@ -82,8 +76,8 @@ def generate_graphs(data, X_test, y_test):
     plt.xlabel("Label")
     plt.ylabel("Number of Images")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
-    plt.close()  
-
+    plt.close()
+    
     # Basic Model graph
     basic_model_accuracy = basic_model.score(X_test, np.argmax(y_test, axis=1))
     plt.figure()
@@ -103,6 +97,6 @@ def generate_graphs(data, X_test, y_test):
     plt.ylabel("Accuracy")
     plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png")
     plt.close()
-
+    
 if __name__ == "__main__":
     generate_graphs()

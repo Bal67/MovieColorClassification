@@ -80,7 +80,7 @@ def main():
     cnn_model = load_cnn_model()
     
     # Generate and save graphs
-    generate_graphs(data, X_test, y_test)
+    generate_graphs(data, X_test, y_test, basic_model, cnn_model)
 
     # Home tab
     if active_tab == "Home":
@@ -130,9 +130,9 @@ def main():
     # Data Exploration tab
     elif active_tab == "Data Exploration":
         st.header("Data Exploration")
+        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png", caption="Sample Images with Primary Colors")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png", caption="Distribution of Primary Colors")
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Number of Images per Label")
-        st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png", caption="Sample Images with Primary Colors")
 
 if __name__ == "__main__":
     main()
