@@ -161,7 +161,7 @@ def main():
         st.image("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png", caption="Number of Images per Label")
         
         st.header("Specific Color Distribution")
-        st.write("This graph shows the distribution of otther colors for each label, giving insights into the color patterns.")
+        st.write("This graph shows the distribution of other colors for each label, giving insights into the color patterns.")
         genre_color_distribution(data)
 
 if __name__ == "__main__":
