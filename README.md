@@ -40,17 +40,17 @@ Download the zipfile for the dataset in the data folder. Proceed to the Google C
 For the StreamLit application: Google Colab has a hard time opening StreamLit applications. In order to do so, you must run the final cell. At the bottom of that cell will be a link that will lead you to a tunnel website. The bottom cell will also provide you with an IP Address that will look as such (XX.XXX.XXX.XX). Insert that address into the tunnel when prompted for a passcode to access the StreamLit application.
 
 
-## Model Evaluation
+# Model Evaluation
 
 
-# Evaluation Process and Metric Selection
+## Evaluation Process and Metric Selection
 
 The evaluation process involves splitting the data into training and testing sets, training the models, and then evaluating their performance on the test set. The primary metric used for evaluation is accuracy, which measures the proportion of correctly classified instances.
 
 For the CNN model, additional metrics like loss and validation accuracy are also considered. Accuracy was chosen as it provides a straightforward measure of how well the model is performing overall.
 
 
-# Data Processing Pipeline
+## Data Processing Pipeline
 
 Load Data: Load images and extract primary colors.
 
@@ -61,7 +61,7 @@ Feature Extraction: Use K-Means clustering to extract primary colors from the im
 Train-Test Split: Split the dataset into training and testing sets.
 
 
-# Models Evaluated
+## Models Evaluated
 
 Basic Logistic Regression Model:
 
@@ -83,6 +83,6 @@ CNN Model Accuracy: Achieved a validation accuracy that improved over multiple e
 The project demonstrates that both basic logistic regression and CNN models can classify movie genres based on the primary colors of movie posters, with the CNN model showing potential for further improvements with more data and tuning.
 
 
-#Acknowledgments
+# Acknowledgments
 Data sourced from MovieGenre.
 This project was developed as part of a machine learning course/project.
