@@ -37,6 +37,8 @@ README.md
 
 Download the zipfile for the dataset in the data folder. Proceed to the Google Colab page that is linked at the top of this README.md. Once at the page, mount to your own Google Drive in order to and proceed to follow the instructions for each cell of the Google Colab. 
 
+Replace all of the #Constants in the code (or anywhere where you see a pathway) with the pathway to your local Google Drive folder/Google Drive pathway
+
 For the StreamLit application: Google Colab has a hard time opening StreamLit applications. In order to do so, you must run the final cell. At the bottom of that cell will be a link that will lead you to a tunnel website. The bottom cell will also provide you with an IP Address that will look as such (XX.XXX.XXX.XX). Insert that address into the tunnel when prompted for a passcode to access the StreamLit application.
 
 
