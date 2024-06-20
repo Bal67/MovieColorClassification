@@ -2,8 +2,9 @@
 
 Movie Color Classification
 
-https://colab.research.google.com/drive/1ojBnhAwkWIASMqb0XgJRBeKZC0P14JJy?usp=sharing
+Google Colab: https://colab.research.google.com/drive/1ojBnhAwkWIASMqb0XgJRBeKZC0P14JJy?usp=sharing
 
+Kaggle Dataset: https://www.kaggle.com/datasets/neha1703/movie-genre-from-its-poster
 
 This project classifies movies based on the primary colors of movie posters. The models used are a Basic Logistic Regression Model and a Convolutional Neural Network (CNN).
 
@@ -19,23 +20,35 @@ This project classifies movies based on the primary colors of movie posters. The
 ## Project Structure
 
 main.py: The main Streamlit app
+
 scripts/: Contains the scripts for generating graphs and processing data
+
 graphs.py: Script for generating graphs
+
 models/: Contains the trained models
+
 basic_model.pkl: The trained basic logistic regression model
+
 cnn_model.h5: The trained CNN model
+
 data/: Contains the dataset
+
 features.csv: Processed features from the dataset
+
 primary_colors.json: JSON file containing primary colors for the images
+
 MovieGenre.csv: Original dataset with movie genres and information
+
 setup.py: Script for setting up the dataset and preprocessing
+
 requirements.txt: List of dependencies
+
 README.md
 
 
 ## Usage
 
-Download the zipfile for the dataset in the data folder. Proceed to the Google Colab page that is linked at the top of this README.md. Once at the page, mount to your own Google Drive in order to and proceed to follow the instructions for each cell of the Google Colab. 
+Use the Kaggle link to download the zipfile for the dataset (https://www.kaggle.com/datasets/neha1703/movie-genre-from-its-poster) . Proceed to the Google Colab page that is linked at the top of this README.md. Once at the page, mount to your own Google Drive in order to and proceed to follow the instructions for each cell of the Google Colab. 
 
 Replace all of the #Constants in the code (or anywhere where you see a pathway) with the pathway to your local Google Drive folder/Google Drive pathway
 
