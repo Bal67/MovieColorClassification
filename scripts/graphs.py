@@ -50,7 +50,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
             plt.barh([0], [10], color=[color/255.0], edgecolor='none')
         plt.axis('off')
     plt.suptitle("Sample Images with Primary Colors")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/sample_images_with_colors.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieColorClassification/models/sample_images_with_colors.png")
     plt.close()
 
     # Distribution of primary colors
@@ -64,7 +64,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     plt.legend(loc='upper right')
     plt.xlabel("Color value")
     plt.ylabel("Frequency")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/color_distribution.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieColorClassification/models/color_distribution.png")
     plt.close()
 
     # Number of images per label
@@ -75,7 +75,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     label_counts.plot(kind='bar')
     plt.xlabel("Label")
     plt.ylabel("Number of Images")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/label_distribution.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieColorClassification/models/label_distribution.png")
     plt.close()
     
     # Basic Model graph
@@ -85,7 +85,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     plt.bar(["Accuracy"], [basic_model_accuracy])
     plt.ylim(0, 1)
     plt.ylabel("Accuracy")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/basic_model_graph.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieColorClassification/models/basic_model_graph.png")
     plt.close()
 
     # CNN Model graph
@@ -95,7 +95,7 @@ def generate_graphs(data, X_test, y_test, basic_model, cnn_model):
     plt.bar(["Accuracy"], [cnn_model_accuracy])
     plt.ylim(0, 1)
     plt.ylabel("Accuracy")
-    plt.savefig("/content/drive/My Drive/MovieGenre/MovieGenreClassification/models/cnn_model_graph.png")
+    plt.savefig("/content/drive/My Drive/MovieGenre/MovieColorClassification/models/cnn_model_graph.png")
     plt.close()
     
 if __name__ == "__main__":
